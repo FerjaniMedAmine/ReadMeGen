@@ -1,3 +1,6 @@
 fastapi
 uvicorn
 python-multipart
+tree-sitter-language-pack
+fastembed
+httpx

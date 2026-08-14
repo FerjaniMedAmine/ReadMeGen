@@ -32,4 +32,44 @@ EXCLUDE_EXTENSIONS = {
 KEEP_HIDDEN_FILES = {".env.example", ".gitignore", ".dockerignore", ".eslintrc"}
 
 MAX_FILE_SIZE_BYTES = 500_000       # 500KB — au-delà, probablement pas du code source lisible
-MAX_TOTAL_FILES = 3000              # protection contre les repos énormes
+MAX_TOTAL_FILES = 3000              # protection contre les repos 
+
+
+
+EXTENSION_TO_LANGUAGE = {
+    ".py": "python",
+    ".js": "javascript",
+    ".jsx": "javascript",
+    ".ts": "typescript",
+    ".tsx": "tsx",
+    ".java": "java",
+    ".c": "c",
+    ".h": "c",
+    ".cpp": "cpp",
+    ".hpp": "cpp",
+    ".cc": "cpp",
+    ".cs": "c_sharp",
+    ".go": "go",
+    ".rb": "ruby",
+    ".php": "php",
+    ".rs": "rust",
+    ".kt": "kotlin",
+    ".swift": "swift",
+    ".scala": "scala",
+    ".sh": "bash",
+}
+
+CHUNK_MAX_TOKENS = 200       # plafond par chunk (marge sous les 512 de bge-small)
+CHUNK_OVERLAP_TOKENS = 30    # à augmenter si tu passes à un modèle avec plus de contexte
+TOKENS_PER_WORD = 1.3        # estimation approx, pas de tokenizer dédié
+
+# Embeddings
+TEI_URL = "http://localhost:8080/embed"
+EMBEDDING_BATCH_SIZE = 32
+SPARSE_MODEL_NAME = "Qdrant/bm25"
+
+# Qdrant
+QDRANT_URL = "http://localhost:6333"
+QDRANT_COLLECTION_NAME = "ReadMeGen"
+DENSE_VECTOR_NAME = "dense"
+SPARSE_VECTOR_NAME = "sparse"

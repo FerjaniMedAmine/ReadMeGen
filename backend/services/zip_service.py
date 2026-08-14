@@ -8,7 +8,6 @@ from uuid import uuid4
 from fastapi import HTTPException, UploadFile
 
 from core.config import PROJECTS_DIR
-from core.locks import project_locks  # shared with gitService — see note below
 
 CHUNK_SIZE = 1024 * 1024        # 1 Mo
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024      # 50MB on disk — raw zip cap
@@ -94,41 +93,38 @@ async def import_zip_project(zip_file: UploadFile) -> dict:
 
         # lock par project_id : deux uploads du même contenu en même temps
         # font la queue ici plutôt que de se marcher dessus
-        async with project_locks[project_id]:
-            if source_directory.exists():
-                temporary_path.unlink(missing_ok=True)
-                return {
-                    "project_id": project_id,
-                    "filename": filename,
-                    "status": "already_exists",
-                    "project_path": str(source_directory.relative_to(PROJECTS_DIR.parent)),
-                }
-
-            if not zipfile.is_zipfile(temporary_path):
-                raise HTTPException(status_code=400, detail="Le fichier envoyé n'est pas une archive ZIP valide.")
-
-            project_directory.mkdir(parents=True, exist_ok=False)
-
-            try:
-                # extraction (I/O + CPU) hors de la boucle d'événements
-                loop = asyncio.get_running_loop()
-                await loop.run_in_executor(None, _validate_and_extract, temporary_path, source_directory)
-            except (ValueError, zipfile.BadZipFile) as error:
-                shutil.rmtree(project_directory, ignore_errors=True)
-                raise HTTPException(status_code=400, detail=str(error)) from error
-            except Exception:
-                shutil.rmtree(project_directory, ignore_errors=True)
-                raise
-
+        if source_directory.exists():
             temporary_path.unlink(missing_ok=True)
-
             return {
                 "project_id": project_id,
                 "filename": filename,
-                "status": "imported",
+                "status": "already_exists",
                 "project_path": str(source_directory.relative_to(PROJECTS_DIR.parent)),
             }
 
+        if not zipfile.is_zipfile(temporary_path):
+            raise HTTPException(status_code=400, detail="Le fichier envoyé n'est pas une archive ZIP valide.")
+
+        project_directory.mkdir(parents=True, exist_ok=False)
+
+        try:
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, _validate_and_extract, temporary_path, source_directory)
+        except (ValueError, zipfile.BadZipFile) as error:
+            shutil.rmtree(project_directory, ignore_errors=True)
+            raise HTTPException(status_code=400, detail=str(error)) from error
+        except Exception:
+            shutil.rmtree(project_directory, ignore_errors=True)
+            raise
+
+        temporary_path.unlink(missing_ok=True)
+
+        return {
+            "project_id": project_id,
+            "filename": filename,
+            "status": "imported",
+            "project_path": str(source_directory.relative_to(PROJECTS_DIR.parent)),
+        }
     except Exception:
         temporary_path.unlink(missing_ok=True)
         raise

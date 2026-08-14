@@ -84,51 +84,38 @@ async def import_git_project(git_url: str) -> dict:
 
     # serialize imports of the same repo — a second request for the same
     # URL waits here instead of racing the first
-    async with _project_locks[project_id]:
-        try:
-            # run_in_executor keeps this from blocking the event loop while
-            # git clone runs — swap for asyncio.create_subprocess_exec if
-            # you want to avoid the threadpool entirely
-            import asyncio
+    try:
+        import asyncio
+        await asyncio.get_running_loop().run_in_executor(
+            None,
+            lambda: subprocess.run(command, check=True, capture_output=True, text=True, timeout=120),
+        )
 
-            await asyncio.get_running_loop().run_in_executor(
-                None,
-                lambda: subprocess.run(
-                    command, check=True, capture_output=True, text=True, timeout=120
-                ),
-            )
+        shutil.rmtree(temporary_directory / ".git", ignore_errors=True)
+        _check_clone_size(temporary_directory)
 
-            shutil.rmtree(temporary_directory / ".git", ignore_errors=True)
-            _check_clone_size(temporary_directory)
+        if project_directory.exists():
+            shutil.rmtree(project_directory)
 
-            if project_directory.exists():
-                shutil.rmtree(project_directory)
+        project_directory.mkdir(parents=True, exist_ok=False)
+        shutil.move(str(temporary_directory), str(source_directory))
 
-            project_directory.mkdir(parents=True, exist_ok=False)
-            shutil.move(str(temporary_directory), str(source_directory))
+    except FileNotFoundError as error:
+        shutil.rmtree(temporary_directory, ignore_errors=True)
+        raise HTTPException(status_code=500, detail="Git n'est pas installé ou accessible.") from error
 
-        except FileNotFoundError as error:
-            shutil.rmtree(temporary_directory, ignore_errors=True)
-            raise HTTPException(
-                status_code=500, detail="Git n'est pas installé ou accessible."
-            ) from error
+    except subprocess.TimeoutExpired as error:
+        shutil.rmtree(temporary_directory, ignore_errors=True)
+        raise HTTPException(status_code=408, detail="Le clonage Git a dépassé 120 secondes.") from error
 
-        except subprocess.TimeoutExpired as error:
-            shutil.rmtree(temporary_directory, ignore_errors=True)
-            raise HTTPException(
-                status_code=408, detail="Le clonage Git a dépassé 120 secondes."
-            ) from error
+    except subprocess.CalledProcessError as error:
+        shutil.rmtree(temporary_directory, ignore_errors=True)
+        error_message = error.stderr.strip() if error.stderr else "Le clonage Git a échoué."
+        raise HTTPException(status_code=400, detail=error_message) from error
 
-        except subprocess.CalledProcessError as error:
-            shutil.rmtree(temporary_directory, ignore_errors=True)
-            error_message = (
-                error.stderr.strip() if error.stderr else "Le clonage Git a échoué."
-            )
-            raise HTTPException(status_code=400, detail=error_message) from error
-
-        except Exception:
-            shutil.rmtree(temporary_directory, ignore_errors=True)
-            raise
+    except Exception:
+        shutil.rmtree(temporary_directory, ignore_errors=True)
+        raise
 
     return {
         "project_id": project_id,

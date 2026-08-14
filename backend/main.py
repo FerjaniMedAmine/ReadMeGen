@@ -6,7 +6,7 @@ from routers.ingestion import router as ingestion_router
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # port par défaut de Vite
+    allow_origins=["http://localhost:5173"],  
     allow_methods=["*"],
     allow_headers=["*"],
 )

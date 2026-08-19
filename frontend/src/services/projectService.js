@@ -31,6 +31,14 @@ const projectService = {
 
     return response.data;
   },
+
+  getReadme: async (projectId) => {
+    const response = await httpClient.get(
+      `/projects/${projectId}/readme`
+    );
+
+    return response.data;
+  },
 };
 
 export default projectService;

@@ -73,3 +73,9 @@ QDRANT_URL = "http://localhost:6333"
 QDRANT_COLLECTION_NAME = "ReadMeGen"
 DENSE_VECTOR_NAME = "dense"
 SPARSE_VECTOR_NAME = "sparse"
+
+
+
+GEMINI_MODEL = "gemini-3.7-flash"
+ROUTER_TOKEN_THRESHOLD = 100_000
+MAX_FILE_READ_CHARS = 20_000  # plafond de sécurité par lecture de fichier

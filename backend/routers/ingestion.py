@@ -7,6 +7,9 @@ from services.indexing_service import index_project
 from services.zip_service import import_zip_project
 from services.filter_service import ProjectTooLargeError, filter_project_files
 from services.git_service import import_git_project
+from core.config import PROJECTS_DIR
+from services.agents_graph import generate_readme
+from fastapi.responses import PlainTextResponse
 
 router = APIRouter(
     prefix="/api/v1/projects",
@@ -19,10 +22,6 @@ class GitImportRequest(BaseModel):
 
 
 async def run_filtering(project_id: str):
-    """
-    Appelée en tâche de fond juste après l'extraction (zip ou git).
-    Filtre les fichiers du projet, puis les indexe dans Qdrant.
-    """
     source_dir = PROJECTS_DIR / project_id / "source"
     set_status(project_id, "filtering")
 
@@ -44,6 +43,21 @@ async def run_filtering(project_id: str):
         return
 
     set_status(
+        project_id, "generating_readme", file_count=len(files), chunk_count=chunk_count
+    )
+
+    try:
+        readme_content = await generate_readme(project_id, source_dir)
+    except Exception as error:
+        set_status(
+            project_id, "error", detail=f"Échec de la génération du README : {error}"
+        )
+        return
+
+    readme_path = PROJECTS_DIR / project_id / "README.md"
+    readme_path.write_text(readme_content, encoding="utf-8")
+
+    set_status(
         project_id,
         "ready",
         file_count=len(files),
@@ -53,7 +67,9 @@ async def run_filtering(project_id: str):
 
 
 @router.post("/upload-zip", status_code=202)
-async def upload_zip(background_tasks: BackgroundTasks, zip_file: UploadFile = File(...)):
+async def upload_zip(
+    background_tasks: BackgroundTasks, zip_file: UploadFile = File(...)
+):
     result = await import_zip_project(zip_file)
 
     if result["status"] == "imported":
@@ -80,3 +96,11 @@ async def project_status(project_id: str):
     if status is None:
         raise HTTPException(status_code=404, detail="Projet introuvable.")
     return {"project_id": project_id, **status}
+
+
+@router.get("/{project_id}/readme", response_class=PlainTextResponse)
+async def get_readme(project_id: str):
+    readme_path = PROJECTS_DIR / project_id / "README.md"
+    if not readme_path.exists():
+        raise HTTPException(status_code=404, detail="README pas encore généré.")
+    return readme_path.read_text(encoding="utf-8")

@@ -1,0 +1,159 @@
+.quantite-page {
+  min-height: 100vh;
+  padding: 32px 20px;
+  background: #f4f7fb;
+}
+
+.quantite-container {
+  width: min(850px, 100%);
+  margin: 0 auto;
+}
+
+.quantite-header {
+  margin-bottom: 24px;
+}
+
+.quantite-header h1 {
+  margin: 6px 0 10px;
+  color: #172033;
+  font-size: 2rem;
+}
+
+.quantite-header p {
+  margin: 0;
+  color: #667085;
+}
+
+.quantite-category {
+  color: #2563eb !important;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.quantite-context {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(140px, 1fr)
+  );
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.quantite-context div {
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+}
+
+.quantite-context span {
+  display: block;
+  margin-bottom: 5px;
+  color: #667085;
+  font-size: 0.8rem;
+}
+
+.quantite-context strong {
+  color: #172033;
+}
+
+.quantite-form,
+.quantite-success {
+  padding: 26px;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
+}
+
+.quantite-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quantite-field label {
+  color: #344054;
+  font-weight: 600;
+}
+
+.quantite-field input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.quantite-field input:focus {
+  border-color: #2563eb;
+  outline: 3px solid rgba(37, 99, 235, 0.12);
+}
+
+.quantite-message {
+  padding: 12px 14px;
+  margin-top: 18px;
+  border-radius: 8px;
+}
+
+.quantite-message--error {
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+}
+
+.quantite-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.quantite-btn {
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.quantite-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.quantite-btn--primary {
+  color: #ffffff;
+  background: #2563eb;
+}
+
+.quantite-btn--secondary {
+  color: #344054;
+  background: #eaecf0;
+}
+
+.quantite-success {
+  text-align: center;
+}
+
+.quantite-success h2 {
+  color: #067647;
+}
+
+.quantite-success .quantite-btn {
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  .quantite-actions {
+    flex-direction: column-reverse;
+  }
+
+  .quantite-btn {
+    width: 100%;
+  }
+}

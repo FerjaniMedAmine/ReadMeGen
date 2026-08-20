@@ -1,0 +1,1748 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict 9vegybv242yPxed8sReFtHf8SNfwt2hBAcisDSh2BYqFsELr7wpET2WjnLWzrGe
+
+-- Dumped from database version 16.14
+-- Dumped by pg_dump version 16.14
+
+-- Started on 2026-07-31 00:13:55
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 215 (class 1259 OID 24857)
+-- Name: cartes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cartes (
+    reference character varying(100) NOT NULL,
+    client_id integer NOT NULL
+);
+
+
+ALTER TABLE public.cartes OWNER TO postgres;
+
+--
+-- TOC entry 216 (class 1259 OID 24860)
+-- Name: clients; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.clients (
+    id integer NOT NULL,
+    nom character varying(100) NOT NULL,
+    date_creation timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.clients OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1259 OID 24864)
+-- Name: clients_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.clients_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.clients_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4954 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: clients_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.clients_id_seq OWNED BY public.clients.id;
+
+
+--
+-- TOC entry 218 (class 1259 OID 24865)
+-- Name: code_erreur; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.code_erreur (
+    id integer NOT NULL,
+    code character varying(100),
+    type_defauts_id integer
+);
+
+
+ALTER TABLE public.code_erreur OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 24868)
+-- Name: code_erreur_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.code_erreur_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.code_erreur_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4955 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: code_erreur_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.code_erreur_id_seq OWNED BY public.code_erreur.id;
+
+
+--
+-- TOC entry 240 (class 1259 OID 25046)
+-- Name: defauts_detectes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.defauts_detectes (
+    id integer NOT NULL,
+    session_id integer NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    code_erreur_id integer,
+    repere_topo character varying(50),
+    coefficient integer DEFAULT 1,
+    observation character varying(255),
+    numero_produit integer
+);
+
+
+ALTER TABLE public.defauts_detectes OWNER TO postgres;
+
+--
+-- TOC entry 239 (class 1259 OID 25045)
+-- Name: defauts_detectes_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.defauts_detectes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.defauts_detectes_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4956 (class 0 OID 0)
+-- Dependencies: 239
+-- Name: defauts_detectes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.defauts_detectes_id_seq OWNED BY public.defauts_detectes.id;
+
+
+--
+-- TOC entry 220 (class 1259 OID 24875)
+-- Name: guide_ligne; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.guide_ligne (
+    id bigint NOT NULL,
+    reference_carte character varying(100) NOT NULL,
+    reference_composant character varying(100) NOT NULL,
+    machine_id integer NOT NULL,
+    numero_slot integer NOT NULL,
+    "position" integer NOT NULL,
+    face character varying(10) NOT NULL,
+    quantite integer,
+    CONSTRAINT chk_guide_ligne_face CHECK (((face)::text = ANY ((ARRAY['TOP'::character varying, 'BOT'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.guide_ligne OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 24878)
+-- Name: guide_ligne_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.guide_ligne_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.guide_ligne_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4957 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: guide_ligne_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.guide_ligne_id_seq OWNED BY public.guide_ligne.id;
+
+
+--
+-- TOC entry 222 (class 1259 OID 24879)
+-- Name: historique; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.historique (
+    id bigint NOT NULL,
+    date timestamp with time zone DEFAULT now() NOT NULL,
+    type_operation character varying(50) NOT NULL,
+    site character varying(50) NOT NULL,
+    client character varying(100) NOT NULL,
+    conducteur character varying(200) NOT NULL,
+    machine character varying(100) NOT NULL,
+    reference_carte character varying(100) NOT NULL,
+    reference_bobine character varying(100) NOT NULL,
+    reference_feeder character varying(100) NOT NULL,
+    numero_slot integer NOT NULL,
+    position_feeder integer NOT NULL,
+    face character varying(10),
+    commentaire text,
+    CONSTRAINT historique_face_check CHECK (((face)::text = ANY (ARRAY[('TOP'::character varying)::text, ('BOT'::character varying)::text]))),
+    CONSTRAINT historique_numero_slot_check CHECK ((numero_slot > 0)),
+    CONSTRAINT historique_position_feeder_check CHECK ((position_feeder > 0)),
+    CONSTRAINT historique_type_operation_check CHECK (((type_operation)::text = ANY (ARRAY[('suivi_plan_chargement'::character varying)::text, ('reordonnancement'::character varying)::text, ('raboutage_rechargement'::character varying)::text])))
+);
+
+
+ALTER TABLE public.historique OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 24889)
+-- Name: historique_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.historique_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.historique_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4958 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: historique_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.historique_id_seq OWNED BY public.historique.id;
+
+
+--
+-- TOC entry 224 (class 1259 OID 24890)
+-- Name: ilots; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.ilots (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    CONSTRAINT chk_ilots_name_not_empty CHECK ((btrim((name)::text) <> ''::text))
+);
+
+
+ALTER TABLE public.ilots OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 24894)
+-- Name: ilots_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.ilots_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.ilots_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4959 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: ilots_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.ilots_id_seq OWNED BY public.ilots.id;
+
+
+--
+-- TOC entry 226 (class 1259 OID 24895)
+-- Name: machine; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.machine (
+    id integer NOT NULL,
+    nom character varying(100) NOT NULL
+);
+
+
+ALTER TABLE public.machine OWNER TO postgres;
+
+--
+-- TOC entry 227 (class 1259 OID 24898)
+-- Name: machine_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.machine_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.machine_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4960 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: machine_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.machine_id_seq OWNED BY public.machine.id;
+
+
+--
+-- TOC entry 228 (class 1259 OID 24899)
+-- Name: ordres_fabrication; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.ordres_fabrication (
+    numero_of integer NOT NULL,
+    reference_produit character varying(50),
+    quantite integer,
+    site_id integer,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.ordres_fabrication OWNER TO postgres;
+
+--
+-- TOC entry 229 (class 1259 OID 24903)
+-- Name: postes_detection; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.postes_detection (
+    id integer NOT NULL,
+    name character varying(50) NOT NULL,
+    ilots_id integer,
+    CONSTRAINT chk_postes_detection_name_not_empty CHECK ((btrim((name)::text) <> ''::text))
+);
+
+
+ALTER TABLE public.postes_detection OWNER TO postgres;
+
+--
+-- TOC entry 230 (class 1259 OID 24907)
+-- Name: postes_detection_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.postes_detection_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.postes_detection_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4961 (class 0 OID 0)
+-- Dependencies: 230
+-- Name: postes_detection_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.postes_detection_id_seq OWNED BY public.postes_detection.id;
+
+
+--
+-- TOC entry 238 (class 1259 OID 25028)
+-- Name: sessions_controle; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sessions_controle (
+    id integer NOT NULL,
+    numero_of integer NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    controleur_id integer,
+    operateur_id integer,
+    quantite_controlee integer,
+    ilot_id integer,
+    poste_detection_id integer
+);
+
+
+ALTER TABLE public.sessions_controle OWNER TO postgres;
+
+--
+-- TOC entry 237 (class 1259 OID 25027)
+-- Name: sessions_controle_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sessions_controle_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.sessions_controle_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4962 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: sessions_controle_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sessions_controle_id_seq OWNED BY public.sessions_controle.id;
+
+
+--
+-- TOC entry 231 (class 1259 OID 24908)
+-- Name: sites; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sites (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT chk_sites_name_not_empty CHECK ((btrim((name)::text) <> ''::text))
+);
+
+
+ALTER TABLE public.sites OWNER TO postgres;
+
+--
+-- TOC entry 232 (class 1259 OID 24913)
+-- Name: sites_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sites_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.sites_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4963 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: sites_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sites_id_seq OWNED BY public.sites.id;
+
+
+--
+-- TOC entry 233 (class 1259 OID 24914)
+-- Name: type_defauts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.type_defauts (
+    id integer NOT NULL,
+    name character varying(20),
+    postes_detection_id integer
+);
+
+
+ALTER TABLE public.type_defauts OWNER TO postgres;
+
+--
+-- TOC entry 234 (class 1259 OID 24917)
+-- Name: type_defauts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.type_defauts_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.type_defauts_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4964 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: type_defauts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.type_defauts_id_seq OWNED BY public.type_defauts.id;
+
+
+--
+-- TOC entry 235 (class 1259 OID 24918)
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    username character varying(100) NOT NULL,
+    password_hash text NOT NULL,
+    role character varying(50) DEFAULT 'operateur'::character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- TOC entry 236 (class 1259 OID 24925)
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4965 (class 0 OID 0)
+-- Dependencies: 236
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- TOC entry 4697 (class 2604 OID 24926)
+-- Name: clients id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.clients ALTER COLUMN id SET DEFAULT nextval('public.clients_id_seq'::regclass);
+
+
+--
+-- TOC entry 4699 (class 2604 OID 24927)
+-- Name: code_erreur id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.code_erreur ALTER COLUMN id SET DEFAULT nextval('public.code_erreur_id_seq'::regclass);
+
+
+--
+-- TOC entry 4715 (class 2604 OID 25049)
+-- Name: defauts_detectes id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.defauts_detectes ALTER COLUMN id SET DEFAULT nextval('public.defauts_detectes_id_seq'::regclass);
+
+
+--
+-- TOC entry 4700 (class 2604 OID 24929)
+-- Name: guide_ligne id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.guide_ligne ALTER COLUMN id SET DEFAULT nextval('public.guide_ligne_id_seq'::regclass);
+
+
+--
+-- TOC entry 4701 (class 2604 OID 24930)
+-- Name: historique id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.historique ALTER COLUMN id SET DEFAULT nextval('public.historique_id_seq'::regclass);
+
+
+--
+-- TOC entry 4703 (class 2604 OID 24931)
+-- Name: ilots id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ilots ALTER COLUMN id SET DEFAULT nextval('public.ilots_id_seq'::regclass);
+
+
+--
+-- TOC entry 4704 (class 2604 OID 24932)
+-- Name: machine id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.machine ALTER COLUMN id SET DEFAULT nextval('public.machine_id_seq'::regclass);
+
+
+--
+-- TOC entry 4706 (class 2604 OID 24933)
+-- Name: postes_detection id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.postes_detection ALTER COLUMN id SET DEFAULT nextval('public.postes_detection_id_seq'::regclass);
+
+
+--
+-- TOC entry 4713 (class 2604 OID 25031)
+-- Name: sessions_controle id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sessions_controle ALTER COLUMN id SET DEFAULT nextval('public.sessions_controle_id_seq'::regclass);
+
+
+--
+-- TOC entry 4707 (class 2604 OID 24934)
+-- Name: sites id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sites ALTER COLUMN id SET DEFAULT nextval('public.sites_id_seq'::regclass);
+
+
+--
+-- TOC entry 4709 (class 2604 OID 24935)
+-- Name: type_defauts id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.type_defauts ALTER COLUMN id SET DEFAULT nextval('public.type_defauts_id_seq'::regclass);
+
+
+--
+-- TOC entry 4710 (class 2604 OID 24936)
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- TOC entry 4923 (class 0 OID 24857)
+-- Dependencies: 215
+-- Data for Name: cartes; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.cartes VALUES ('CP002209_B6', 1);
+INSERT INTO public.cartes VALUES ('CP012277_A0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP003081_B2', 1);
+INSERT INTO public.cartes VALUES ('EVOCP003097_C0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP009027_C2', 1);
+INSERT INTO public.cartes VALUES ('EVOCP010021/B0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP010037/E0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP010047/C1', 1);
+INSERT INTO public.cartes VALUES ('EVOCP010049/B0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP010051/A9', 1);
+INSERT INTO public.cartes VALUES ('EVOCP010053/F0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP010349/G1', 1);
+INSERT INTO public.cartes VALUES ('EVOCP010351_A1', 1);
+INSERT INTO public.cartes VALUES ('EVOCP010901_D1', 1);
+INSERT INTO public.cartes VALUES ('EVOCP011448/C1', 1);
+INSERT INTO public.cartes VALUES ('EVOCP011470/F0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP011964_A4', 1);
+INSERT INTO public.cartes VALUES ('EVOCP012060_B0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP012121_A1', 1);
+INSERT INTO public.cartes VALUES ('EVOCP012219_B0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP013547/C0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP013463/B0', 1);
+INSERT INTO public.cartes VALUES ('EVOCP014050_B1', 1);
+INSERT INTO public.cartes VALUES ('IMAA28629/E', 2);
+INSERT INTO public.cartes VALUES ('PRK1000008186/A', 3);
+INSERT INTO public.cartes VALUES ('SNID180NA101', 5);
+
+
+--
+-- TOC entry 4924 (class 0 OID 24860)
+-- Dependencies: 216
+-- Data for Name: clients; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.clients VALUES (2, 'Imaje', '2026-07-07 13:21:45.981906+01');
+INSERT INTO public.clients VALUES (3, 'PARKEON', '2026-07-07 13:21:45.981906+01');
+INSERT INTO public.clients VALUES (4, 'PGX--LECTRA', '2026-07-07 13:21:45.981906+01');
+INSERT INTO public.clients VALUES (5, 'PGX--04-NIDEC', '2026-07-07 13:21:45.981906+01');
+INSERT INTO public.clients VALUES (1, 'EVOLIS', '2026-07-07 13:21:45.981906+01');
+
+
+--
+-- TOC entry 4926 (class 0 OID 24865)
+-- Dependencies: 218
+-- Data for Name: code_erreur; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.code_erreur VALUES (1, '11- Brasage - Court circuit', 12);
+INSERT INTO public.code_erreur VALUES (2, '12- Brasage - manque soudure', 12);
+INSERT INTO public.code_erreur VALUES (3, '13- Brasage - mauvaise soudure', 12);
+INSERT INTO public.code_erreur VALUES (4, '14- Brasage- billes de soudure', 12);
+INSERT INTO public.code_erreur VALUES (5, '51- Aspect- aspect général', 15);
+INSERT INTO public.code_erreur VALUES (6, '52- Aspect- propreté', 15);
+INSERT INTO public.code_erreur VALUES (7, '51- Aspect- aspect général', 19);
+INSERT INTO public.code_erreur VALUES (8, '52- Aspect- propreté', 19);
+INSERT INTO public.code_erreur VALUES (9, '21- Assemblage- composant manquant', 17);
+INSERT INTO public.code_erreur VALUES (10, '22- Assemblage- mauvaise valeur', 17);
+INSERT INTO public.code_erreur VALUES (12, '23- Assemblage- mauvaise polarité', 17);
+INSERT INTO public.code_erreur VALUES (13, '24- Assemblage- composant mal placé', 17);
+INSERT INTO public.code_erreur VALUES (14, '25- Assemblage- composant mal plaqué', 17);
+INSERT INTO public.code_erreur VALUES (15, '26- Assemblage- mauvaise montage', 17);
+INSERT INTO public.code_erreur VALUES (16, '12- Brasage - manque soudure', 16);
+INSERT INTO public.code_erreur VALUES (17, '13- Brasage - mauvaise soudure', 16);
+INSERT INTO public.code_erreur VALUES (18, '41- Cablage- fil abimé', 18);
+INSERT INTO public.code_erreur VALUES (19, '42- Cablage- fil non- conforme', 18);
+INSERT INTO public.code_erreur VALUES (20, '43- Cablage- sertissage non- conforme', 18);
+INSERT INTO public.code_erreur VALUES (21, '44- Cablage- mauvaise cheminement fils', 18);
+INSERT INTO public.code_erreur VALUES (22, '33- Composants- composant dégradé', 21);
+INSERT INTO public.code_erreur VALUES (23, '53-RAS', 20);
+INSERT INTO public.code_erreur VALUES (24, '21- Assemblage- composant manquant', 13);
+INSERT INTO public.code_erreur VALUES (25, '22- Assemblage- mauvaise valeur', 13);
+INSERT INTO public.code_erreur VALUES (26, '23- Assemblage- mauvaise polarité', 13);
+INSERT INTO public.code_erreur VALUES (27, '24- Assemblage- composant mal placé', 13);
+INSERT INTO public.code_erreur VALUES (28, '25- Assemblage- composant mal plaqué', 13);
+INSERT INTO public.code_erreur VALUES (29, '27- Connecteur CMS à l''envers', 14);
+INSERT INTO public.code_erreur VALUES (30, '28- Connecteur CMS mal soudé', 14);
+INSERT INTO public.code_erreur VALUES (32, '29- Connecteur CMS décalé', 14);
+INSERT INTO public.code_erreur VALUES (33, '30- Connecteur CMS mal plaqué', 14);
+INSERT INTO public.code_erreur VALUES (34, '33- Composants- composant dégradé', 14);
+
+
+--
+-- TOC entry 4948 (class 0 OID 25046)
+-- Dependencies: 240
+-- Data for Name: defauts_detectes; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.defauts_detectes VALUES (1, 1, '2026-07-30 22:33:54.675422', 5, 'u4', 1, NULL, 1);
+INSERT INTO public.defauts_detectes VALUES (2, 1, '2026-07-30 22:34:02.110456', 6, '23rf', 1, NULL, 1);
+INSERT INTO public.defauts_detectes VALUES (3, 1, '2026-07-30 22:34:19.205289', 2, 'u4', 3, NULL, 2);
+INSERT INTO public.defauts_detectes VALUES (4, 1, '2026-07-30 22:34:26.134593', 26, 'u4', 1, NULL, 2);
+INSERT INTO public.defauts_detectes VALUES (5, 1, '2026-07-30 22:34:32.681122', 32, 'f5', 1, NULL, 2);
+
+
+--
+-- TOC entry 4928 (class 0 OID 24875)
+-- Dependencies: 220
+-- Data for Name: guide_ligne; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.guide_ligne VALUES (22, 'EVOCP010349/G1', 'EVO20130', 2, 4, 9, 'TOP', 560);
+INSERT INTO public.guide_ligne VALUES (23, 'EVOCP010349/G1', 'EVO23020', 2, 4, 10, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (24, 'EVOCP010349/G1', 'EVO22524', 2, 4, 11, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (25, 'EVOCP010349/G1', 'EVO21720', 2, 4, 12, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (26, 'EVOCP010349/G1', 'EVO21719', 2, 4, 13, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (27, 'EVOCP010349/G1', 'EVO21658', 2, 4, 14, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (28, 'EVOCP010349/G1', 'EVO21058', 2, 4, 15, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (29, 'EVOCP010349/G1', 'EVO20211', 2, 4, 16, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (30, 'EVOCP010349/G1', 'EVO20209', 2, 5, 2, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (31, 'EVOCP010349/G1', 'EVO21690', 2, 5, 3, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (32, 'EVOCP010349/G1', 'EVO29393', 2, 5, 4, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (33, 'EVOCP010349/G1', 'EVO20203', 2, 5, 5, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (34, 'EVOCP010349/G1', 'EVO21671', 2, 5, 6, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (35, 'EVOCP010349/G1', 'EVO21675', 2, 5, 7, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (36, 'EVOCP010349/G1', 'EVO21679', 2, 5, 8, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (37, 'EVOCP010349/G1', 'EVO20270', 2, 5, 9, 'TOP', 2240);
+INSERT INTO public.guide_ligne VALUES (38, 'EVOCP010349/G1', 'EVO20172', 2, 5, 10, 'TOP', 1680);
+INSERT INTO public.guide_ligne VALUES (39, 'EVOCP010349/G1', 'EVO24449', 2, 5, 11, 'TOP', 1120);
+INSERT INTO public.guide_ligne VALUES (40, 'EVOCP010349/G1', 'EVO20117', 2, 5, 12, 'TOP', 840);
+INSERT INTO public.guide_ligne VALUES (41, 'EVOCP010349/G1', 'EVO21688', 2, 5, 13, 'TOP', 560);
+INSERT INTO public.guide_ligne VALUES (42, 'EVOCP010349/G1', 'EVO25222', 2, 5, 14, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (43, 'EVOCP010349/G1', 'EVO22308', 2, 5, 15, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (44, 'EVOCP010349/G1', 'EVO21683', 2, 5, 16, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (45, 'EVOCP010349/G1', 'EVO20488', 2, 6, 1, 'TOP', 560);
+INSERT INTO public.guide_ligne VALUES (46, 'EVOCP010349/G1', 'EVO20890', 2, 6, 2, 'TOP', 560);
+INSERT INTO public.guide_ligne VALUES (47, 'EVOCP010349/G1', 'EVO21672', 2, 6, 3, 'TOP', 560);
+INSERT INTO public.guide_ligne VALUES (48, 'EVOCP010349/G1', 'EVO21693', 2, 6, 4, 'TOP', 560);
+INSERT INTO public.guide_ligne VALUES (49, 'EVOCP010349/G1', 'EVO21696', 2, 6, 5, 'TOP', 560);
+INSERT INTO public.guide_ligne VALUES (50, 'EVOCP010349/G1', 'EVO20128', 2, 6, 6, 'TOP', 840);
+INSERT INTO public.guide_ligne VALUES (51, 'EVOCP010349/G1', 'EVO20131', 2, 6, 7, 'TOP', 840);
+INSERT INTO public.guide_ligne VALUES (52, 'EVOCP010349/G1', 'EVO20140', 2, 6, 8, 'TOP', 840);
+INSERT INTO public.guide_ligne VALUES (53, 'EVOCP010349/G1', 'EVO20111', 2, 6, 9, 'TOP', 3360);
+INSERT INTO public.guide_ligne VALUES (54, 'EVOCP010349/G1', 'EVO20161', 2, 6, 10, 'TOP', 3080);
+INSERT INTO public.guide_ligne VALUES (55, 'EVOCP010349/G1', 'EVO20144', 2, 6, 11, 'TOP', 1960);
+INSERT INTO public.guide_ligne VALUES (56, 'EVOCP010349/G1', 'EVO20137', 2, 6, 12, 'TOP', 1680);
+INSERT INTO public.guide_ligne VALUES (57, 'EVOCP010349/G1', 'EVO20150', 2, 6, 13, 'TOP', 1400);
+INSERT INTO public.guide_ligne VALUES (58, 'EVOCP010349/G1', 'EVO21677', 2, 6, 14, 'TOP', 1120);
+INSERT INTO public.guide_ligne VALUES (59, 'EVOCP010349/G1', 'EVO21666', 2, 6, 15, 'TOP', 1120);
+INSERT INTO public.guide_ligne VALUES (60, 'EVOCP010349/G1', 'EVO20213', 2, 6, 16, 'TOP', 840);
+INSERT INTO public.guide_ligne VALUES (61, 'EVOCP010349/G1', 'EVO21684', 2, 10, 1, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (62, 'EVOCP010349/G1', 'EVO21704', 1, 4, 5, 'TOP', 560);
+INSERT INTO public.guide_ligne VALUES (63, 'EVOCP010349/G1', 'EVO22525', 1, 5, 6, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (64, 'EVOCP010349/G1', 'EVO21711', 1, 5, 7, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (65, 'EVOCP010349/G1', 'EVO20365', 1, 5, 8, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (66, 'EVOCP010349/G1', 'EVO20123', 1, 6, 14, 'TOP', 11760);
+INSERT INTO public.guide_ligne VALUES (67, 'EVOCP010349/G1', 'EVO20157', 1, 6, 15, 'TOP', 9520);
+INSERT INTO public.guide_ligne VALUES (68, 'EVOCP010349/G1', 'EVO22310', 1, 6, 16, 'TOP', 6160);
+INSERT INTO public.guide_ligne VALUES (69, 'EVOCP010349/G1', 'EVO21699', 1, 10, 1, 'TOP', 560);
+INSERT INTO public.guide_ligne VALUES (70, 'EVOCP010349/G1', 'EVO21698', 1, 10, 6, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (71, 'EVOCP010349/G1', 'EVO21701', 1, 11, 1, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (72, 'EVOCP010349/G1', 'EVOP95864/PRG/04', 1, 11, 8, 'TOP', 280);
+INSERT INTO public.guide_ligne VALUES (73, 'EVOCP011448/C1', 'EVO22525', 2, 2, 8, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (74, 'EVOCP011448/C1', 'EVO21667', 2, 3, 3, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (75, 'EVOCP011448/C1', 'EVO21690', 2, 3, 4, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (76, 'EVOCP011448/C1', 'EVO29393', 2, 3, 5, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (77, 'EVOCP011448/C1', 'EVO20134', 2, 3, 6, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (78, 'EVOCP011448/C1', 'EVO20139', 2, 3, 7, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (79, 'EVOCP011448/C1', 'EVO20203', 2, 3, 8, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (80, 'EVOCP011448/C1', 'EVO21679', 2, 3, 9, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (81, 'EVOCP011448/C1', 'EVO21675', 2, 3, 10, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (82, 'EVOCP011448/C1', 'EVO21674', 2, 3, 11, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (83, 'EVOCP011448/C1', 'EVO21673', 2, 3, 12, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (84, 'EVOCP011448/C1', 'EVO21671', 2, 3, 13, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (85, 'EVOCP011448/C1', 'EVO21670', 2, 3, 14, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (86, 'EVOCP011448/C1', 'EVO21058', 2, 3, 15, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (87, 'EVOCP011448/C1', 'EVO20211', 2, 3, 16, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (88, 'EVOCP011448/C1', 'EVO21683', 2, 4, 1, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (89, 'EVOCP011448/C1', 'EVO21718', 2, 4, 2, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (90, 'EVOCP011448/C1', 'EVO21719', 2, 4, 3, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (91, 'EVOCP011448/C1', 'EVO21720', 2, 4, 4, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (92, 'EVOCP011448/C1', 'EVO22308', 2, 4, 5, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (93, 'EVOCP011448/C1', 'EVO22524', 2, 4, 6, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (94, 'EVOCP011448/C1', 'EVO23020', 2, 4, 7, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (95, 'EVOCP011448/C1', 'EVO24926', 2, 4, 8, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (96, 'EVOCP011448/C1', 'EVO20346', 2, 4, 9, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (97, 'EVOCP011448/C1', 'EVO20213', 2, 4, 10, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (98, 'EVOCP011448/C1', 'EVO20140', 2, 4, 11, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (99, 'EVOCP011448/C1', 'EVO21681', 2, 4, 12, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (100, 'EVOCP011448/C1', 'EVO20890', 2, 4, 13, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (101, 'EVOCP011448/C1', 'EVO20622', 2, 4, 14, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (102, 'EVOCP011448/C1', 'EVO20130', 2, 4, 15, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (103, 'EVOCP011448/C1', 'EVO25222', 2, 4, 16, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (104, 'EVOCP011448/C1', 'EVO21672', 2, 5, 1, 'TOP', 960);
+INSERT INTO public.guide_ligne VALUES (105, 'EVOCP011448/C1', 'EVO21682', 2, 5, 2, 'TOP', 960);
+INSERT INTO public.guide_ligne VALUES (106, 'EVOCP011448/C1', 'EVO21693', 2, 5, 3, 'TOP', 960);
+INSERT INTO public.guide_ligne VALUES (107, 'EVOCP011448/C1', 'EVO20118', 2, 5, 4, 'TOP', 1200);
+INSERT INTO public.guide_ligne VALUES (108, 'EVOCP011448/C1', 'EVO20131', 2, 5, 5, 'TOP', 1200);
+INSERT INTO public.guide_ligne VALUES (109, 'EVOCP011448/C1', 'EVO20115', 2, 5, 6, 'TOP', 1440);
+INSERT INTO public.guide_ligne VALUES (110, 'EVOCP011448/C1', 'EVO20150', 2, 5, 7, 'TOP', 1440);
+INSERT INTO public.guide_ligne VALUES (111, 'EVOCP011448/C1', 'EVO20171', 2, 5, 8, 'TOP', 1440);
+INSERT INTO public.guide_ligne VALUES (112, 'EVOCP011448/C1', 'EVO20111', 2, 5, 9, 'TOP', 5760);
+INSERT INTO public.guide_ligne VALUES (113, 'EVOCP011448/C1', 'EVO20122', 2, 5, 10, 'TOP', 3360);
+INSERT INTO public.guide_ligne VALUES (114, 'EVOCP011448/C1', 'EVO20353', 2, 5, 11, 'TOP', 2880);
+INSERT INTO public.guide_ligne VALUES (115, 'EVOCP011448/C1', 'EVO20137', 2, 5, 12, 'TOP', 2160);
+INSERT INTO public.guide_ligne VALUES (116, 'EVOCP011448/C1', 'EVO20144', 2, 5, 13, 'TOP', 1680);
+INSERT INTO public.guide_ligne VALUES (117, 'EVOCP011448/C1', 'EVO21677', 2, 5, 14, 'TOP', 1440);
+INSERT INTO public.guide_ligne VALUES (118, 'EVOCP011448/C1', 'EVO21666', 2, 5, 15, 'TOP', 1440);
+INSERT INTO public.guide_ligne VALUES (119, 'EVOCP011448/C1', 'EVO20488', 2, 5, 16, 'TOP', 1440);
+INSERT INTO public.guide_ligne VALUES (120, 'EVOCP011448/C1', 'EVO20121', 2, 6, 1, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (121, 'EVOCP011448/C1', 'EVO20133', 2, 6, 2, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (122, 'EVOCP011448/C1', 'EVO20163', 2, 6, 3, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (123, 'EVOCP011448/C1', 'EVO20799', 2, 6, 4, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (124, 'EVOCP011448/C1', 'EVO21688', 2, 6, 5, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (125, 'EVOCP011448/C1', 'EVO21692', 2, 6, 6, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (126, 'EVOCP011448/C1', 'EVO21696', 2, 6, 7, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (127, 'EVOCP011448/C1', 'EVO22522', 2, 6, 8, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (128, 'EVOCP011448/C1', 'EVO20123', 2, 6, 9, 'TOP', 11280);
+INSERT INTO public.guide_ligne VALUES (129, 'EVOCP011448/C1', 'EVO20129', 2, 6, 10, 'TOP', 4560);
+INSERT INTO public.guide_ligne VALUES (130, 'EVOCP011448/C1', 'EVO20172', 2, 6, 11, 'TOP', 2640);
+INSERT INTO public.guide_ligne VALUES (131, 'EVOCP011448/C1', 'EVO20270', 2, 6, 12, 'TOP', 2160);
+INSERT INTO public.guide_ligne VALUES (132, 'EVOCP011448/C1', 'EVO24449', 2, 6, 13, 'TOP', 1920);
+INSERT INTO public.guide_ligne VALUES (133, 'EVOCP011448/C1', 'EVO20146', 2, 6, 14, 'TOP', 960);
+INSERT INTO public.guide_ligne VALUES (134, 'EVOCP011448/C1', 'EVO20128', 2, 6, 15, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (135, 'EVOCP011448/C1', 'EVO20117', 2, 6, 16, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (136, 'EVOCP011448/C1', 'EVO21660', 2, 10, 1, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (137, 'EVOCP011448/C1', 'EVO21717', 2, 10, 2, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (138, 'EVOCP011448/C1', 'EVO20365', 2, 10, 3, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (139, 'EVOCP011448/C1', 'EVO21651', 2, 10, 4, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (140, 'EVOCP011448/C1', 'EVO21655', 2, 10, 5, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (141, 'EVOCP011448/C1', 'EVO21653', 2, 10, 6, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (142, 'EVOCP011448/C1', 'EVO21652', 2, 10, 7, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (143, 'EVOCP011448/C1', 'EVO21654', 2, 10, 8, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (144, 'EVOCP011448/C1', 'EVO20192', 2, 11, 1, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (145, 'EVOCP011448/C1', 'EVO20218', 2, 11, 2, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (146, 'EVOCP011448/C1', 'EVO22802', 2, 11, 3, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (147, 'EVOCP011448/C1', 'EVO21698', 2, 12, 1, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (148, 'EVOCP011448/C1', 'EVO21824', 1, 2, 8, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (149, 'EVOCP011448/C1', 'EVO25719', 1, 3, 5, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (150, 'EVOCP011448/C1', 'EVO20199', 1, 4, 1, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (151, 'EVOCP011448/C1', 'EVO21648', 1, 4, 2, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (152, 'EVOCP011448/C1', 'EVO21650', 1, 4, 3, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (153, 'EVOCP011448/C1', 'EVO21656', 1, 4, 4, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (154, 'EVOCP011448/C1', 'EVO20198', 1, 4, 5, 'TOP', 1200);
+INSERT INTO public.guide_ligne VALUES (155, 'EVOCP011448/C1', 'EVO21659', 1, 4, 6, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (156, 'EVOCP011448/C1', 'EVO20363', 1, 4, 7, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (157, 'EVOCP011448/C1', 'EVO21822', 1, 4, 8, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (158, 'EVOCP011448/C1', 'EVO21684', 1, 5, 1, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (159, 'EVOCP011448/C1', 'EVO21657', 1, 5, 2, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (160, 'EVOCP011448/C1', 'EVO22309', 1, 5, 3, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (161, 'EVOCP011448/C1', 'EVO21711', 1, 5, 4, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (162, 'EVOCP011448/C1', 'EVO20877', 1, 5, 5, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (163, 'EVOCP011448/C1', 'EVO20621', 1, 5, 6, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (164, 'EVOCP011448/C1', 'EVO21702', 1, 5, 7, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (165, 'EVOCP011448/C1', 'EVO20168', 1, 5, 8, 'TOP', 1440);
+INSERT INTO public.guide_ligne VALUES (166, 'EVOCP011448/C1', 'EVO20209', 1, 6, 7, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (167, 'EVOCP011448/C1', 'EVO21715', 1, 6, 8, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (168, 'EVOCP011448/C1', 'EVO22310', 1, 6, 9, 'TOP', 5760);
+INSERT INTO public.guide_ligne VALUES (169, 'EVOCP011448/C1', 'EVO20154', 1, 6, 10, 'TOP', 10560);
+INSERT INTO public.guide_ligne VALUES (170, 'EVOCP011448/C1', 'EVO20157', 1, 6, 11, 'TOP', 8160);
+INSERT INTO public.guide_ligne VALUES (171, 'EVOCP011448/C1', 'EVO20221', 1, 6, 12, 'TOP', 4560);
+INSERT INTO public.guide_ligne VALUES (172, 'EVOCP011448/C1', 'EVO20161', 1, 6, 13, 'TOP', 2640);
+INSERT INTO public.guide_ligne VALUES (173, 'EVOCP011448/C1', 'EVO20156', 1, 6, 14, 'TOP', 1920);
+INSERT INTO public.guide_ligne VALUES (174, 'EVOCP011448/C1', 'EVO21658', 1, 6, 15, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (175, 'EVOCP011448/C1', 'EVO20159', 1, 6, 16, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (176, 'EVOCP011448/C1', 'EVO21685', 1, 10, 1, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (177, 'EVOCP011448/C1', 'EVO21699', 1, 10, 6, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (178, 'EVOCP011448/C1', 'EVO25962', 1, 10, 11, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (179, 'EVOCP011448/C1', 'EVO21704', 1, 11, 1, 'TOP', 960);
+INSERT INTO public.guide_ligne VALUES (180, 'EVOCP011448/C1', 'EVO21707', 1, 11, 2, 'TOP', 720);
+INSERT INTO public.guide_ligne VALUES (181, 'EVOCP011448/C1', 'EVO21846', 1, 11, 3, 'TOP', 480);
+INSERT INTO public.guide_ligne VALUES (182, 'EVOCP011448/C1', 'EVO20190', 1, 11, 4, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (183, 'EVOCP011448/C1', 'EVO20193', 1, 11, 5, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (184, 'EVOCP011448/C1', 'EVO21701', 1, 12, 1, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (185, 'EVOCP011448/C1', 'EVOP95864/PRG/04', 1, 12, 8, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (186, 'EVOCP011448/C1', 'EVO21647', 1, 14, 1, 'TOP', 240);
+INSERT INTO public.guide_ligne VALUES (187, 'EVOCP013547/C0', 'EVO31116', 2, 2, 10, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (188, 'EVOCP013547/C0', 'EVO21690', 2, 2, 11, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (189, 'EVOCP013547/C0', 'EVO29393', 2, 2, 12, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (190, 'EVOCP013547/C0', 'EVO21058', 2, 2, 13, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (191, 'EVOCP013547/C0', 'EVO20211', 2, 2, 14, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (192, 'EVOCP013547/C0', 'EVO20139', 2, 2, 15, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (193, 'EVOCP013547/C0', 'EVO20134', 2, 2, 16, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (194, 'EVOCP013547/C0', 'EVO20203', 2, 3, 1, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (195, 'EVOCP013547/C0', 'EVO20870', 2, 3, 2, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (196, 'EVOCP013547/C0', 'EVO21667', 2, 3, 3, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (197, 'EVOCP013547/C0', 'EVO21670', 2, 3, 4, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (198, 'EVOCP013547/C0', 'EVO21671', 2, 3, 5, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (199, 'EVOCP013547/C0', 'EVO21673', 2, 3, 6, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (200, 'EVOCP013547/C0', 'EVO21674', 2, 3, 7, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (201, 'EVOCP013547/C0', 'EVO21675', 2, 3, 8, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (202, 'EVOCP013547/C0', 'EVO20117', 2, 3, 9, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (203, 'EVOCP013547/C0', 'EVO31119', 2, 3, 10, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (204, 'EVOCP013547/C0', 'EVO21688', 2, 3, 11, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (205, 'EVOCP013547/C0', 'EVO20129', 2, 3, 12, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (206, 'EVOCP013547/C0', 'EVO21718', 2, 3, 13, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (207, 'EVOCP013547/C0', 'EVO21683', 2, 3, 14, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (208, 'EVOCP013547/C0', 'EVO21679', 2, 3, 15, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (209, 'EVOCP013547/C0', 'EVO21678', 2, 3, 16, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (210, 'EVOCP013547/C0', 'EVO21719', 2, 4, 1, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (211, 'EVOCP013547/C0', 'EVO22308', 2, 4, 2, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (212, 'EVOCP013547/C0', 'EVO22524', 2, 4, 3, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (213, 'EVOCP013547/C0', 'EVO23020', 2, 4, 4, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (214, 'EVOCP013547/C0', 'EVO23118', 2, 4, 5, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (215, 'EVOCP013547/C0', 'EVO24926', 2, 4, 6, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (216, 'EVOCP013547/C0', 'EVO25222', 2, 4, 7, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (217, 'EVOCP013547/C0', 'EVO27594', 2, 4, 8, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (218, 'EVOCP013547/C0', 'EVO21681', 2, 4, 9, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (219, 'EVOCP013547/C0', 'EVO20890', 2, 4, 10, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (220, 'EVOCP013547/C0', 'EVO20799', 2, 4, 11, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (221, 'EVOCP013547/C0', 'EVO20622', 2, 4, 12, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (222, 'EVOCP013547/C0', 'EVO20163', 2, 4, 13, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (223, 'EVOCP013547/C0', 'EVO20133', 2, 4, 14, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (224, 'EVOCP013547/C0', 'EVO20130', 2, 4, 15, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (225, 'EVOCP013547/C0', 'EVO20121', 2, 4, 16, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (226, 'EVOCP013547/C0', 'EVO21692', 2, 5, 1, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (227, 'EVOCP013547/C0', 'EVO21696', 2, 5, 2, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (228, 'EVOCP013547/C0', 'EVO21720', 2, 5, 3, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (229, 'EVOCP013547/C0', 'EVO22522', 2, 5, 4, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (230, 'EVOCP013547/C0', 'EVO20122', 2, 5, 5, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (231, 'EVOCP013547/C0', 'EVO20128', 2, 5, 6, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (232, 'EVOCP013547/C0', 'EVO20140', 2, 5, 7, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (233, 'EVOCP013547/C0', 'EVO20213', 2, 5, 8, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (234, 'EVOCP013547/C0', 'EVO20111', 2, 5, 9, 'TOP', 48);
+INSERT INTO public.guide_ligne VALUES (235, 'EVOCP013547/C0', 'EVO20161', 2, 5, 10, 'TOP', 22);
+INSERT INTO public.guide_ligne VALUES (236, 'EVOCP013547/C0', 'EVO20137', 2, 5, 11, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (237, 'EVOCP013547/C0', 'EVO21666', 2, 5, 12, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (238, 'EVOCP013547/C0', 'EVO20150', 2, 5, 13, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (239, 'EVOCP013547/C0', 'EVO21693', 2, 5, 14, 'TOP', 8);
+INSERT INTO public.guide_ligne VALUES (240, 'EVOCP013547/C0', 'EVO21682', 2, 5, 15, 'TOP', 8);
+INSERT INTO public.guide_ligne VALUES (241, 'EVOCP013547/C0', 'EVO20346', 2, 5, 16, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (242, 'EVOCP013547/C0', 'EVO20146', 2, 6, 1, 'TOP', 8);
+INSERT INTO public.guide_ligne VALUES (243, 'EVOCP013547/C0', 'EVO21672', 2, 6, 2, 'TOP', 8);
+INSERT INTO public.guide_ligne VALUES (244, 'EVOCP013547/C0', 'EVO20118', 2, 6, 3, 'TOP', 10);
+INSERT INTO public.guide_ligne VALUES (245, 'EVOCP013547/C0', 'EVO20131', 2, 6, 4, 'TOP', 10);
+INSERT INTO public.guide_ligne VALUES (246, 'EVOCP013547/C0', 'EVO31174', 2, 6, 5, 'TOP', 10);
+INSERT INTO public.guide_ligne VALUES (247, 'EVOCP013547/C0', 'EVO20115', 2, 6, 6, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (248, 'EVOCP013547/C0', 'EVO20171', 2, 6, 7, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (249, 'EVOCP013547/C0', 'EVO20488', 2, 6, 8, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (250, 'EVOCP013547/C0', 'EVO30437', 2, 6, 9, 'TOP', 38);
+INSERT INTO public.guide_ligne VALUES (251, 'EVOCP013547/C0', 'EVO22310', 2, 6, 10, 'TOP', 38);
+INSERT INTO public.guide_ligne VALUES (252, 'EVOCP013547/C0', 'EVO31118', 2, 6, 11, 'TOP', 24);
+INSERT INTO public.guide_ligne VALUES (253, 'EVOCP013547/C0', 'EVO20172', 2, 6, 12, 'TOP', 22);
+INSERT INTO public.guide_ligne VALUES (254, 'EVOCP013547/C0', 'EVO20270', 2, 6, 13, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (255, 'EVOCP013547/C0', 'EVO24449', 2, 6, 14, 'TOP', 16);
+INSERT INTO public.guide_ligne VALUES (256, 'EVOCP013547/C0', 'EVO20144', 2, 6, 15, 'TOP', 14);
+INSERT INTO public.guide_ligne VALUES (257, 'EVOCP013547/C0', 'EVO21677', 2, 6, 16, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (258, 'EVOCP013547/C0', 'EVO21660', 2, 10, 1, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (259, 'EVOCP013547/C0', 'EVO20365', 2, 10, 2, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (260, 'EVOCP013547/C0', 'EVO21651', 2, 10, 3, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (261, 'EVOCP013547/C0', 'EVO21655', 2, 10, 4, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (262, 'EVOCP013547/C0', 'EVO22309', 2, 10, 5, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (263, 'EVOCP013547/C0', 'EVO21653', 2, 10, 6, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (264, 'EVOCP013547/C0', 'EVO21652', 2, 10, 7, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (265, 'EVOCP013547/C0', 'EVO21654', 2, 10, 8, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (266, 'EVOCP013547/C0', 'EVO21699', 2, 11, 1, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (267, 'EVOCP013547/C0', 'EVO21704', 2, 12, 1, 'TOP', 8);
+INSERT INTO public.guide_ligne VALUES (268, 'EVOCP013547/C0', 'EVO22802', 2, 12, 2, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (269, 'EVOCP013547/C0', 'EVO25719', 2, 12, 3, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (270, 'EVOCP013547/C0', 'EVO22525', 2, 13, 1, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (271, 'EVOCP013547/C0', 'EVO20218', 1, 3, 5, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (272, 'EVOCP013547/C0', 'EVO20199', 1, 4, 1, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (273, 'EVOCP013547/C0', 'EVO21650', 1, 4, 2, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (274, 'EVOCP013547/C0', 'EVO21656', 1, 4, 3, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (275, 'EVOCP013547/C0', 'EVO21717', 1, 4, 4, 'TOP', 10);
+INSERT INTO public.guide_ligne VALUES (276, 'EVOCP013547/C0', 'EVO20198', 1, 4, 5, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (277, 'EVOCP013547/C0', 'EVO21659', 1, 4, 6, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (278, 'EVOCP013547/C0', 'EVO20363', 1, 4, 7, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (279, 'EVOCP013547/C0', 'EVO21822', 1, 4, 8, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (280, 'EVOCP013547/C0', 'EVO21824', 1, 5, 1, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (281, 'EVOCP013547/C0', 'EVO21684', 1, 5, 2, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (282, 'EVOCP013547/C0', 'EVO21657', 1, 5, 3, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (283, 'EVOCP013547/C0', 'EVO21711', 1, 5, 4, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (284, 'EVOCP013547/C0', 'EVO20877', 1, 5, 5, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (285, 'EVOCP013547/C0', 'EVO20621', 1, 5, 6, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (286, 'EVOCP013547/C0', 'EVO21702', 1, 5, 7, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (287, 'EVOCP013547/C0', 'EVO20168', 1, 5, 8, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (288, 'EVOCP013547/C0', 'EVO20209', 1, 6, 6, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (289, 'EVOCP013547/C0', 'EVO21715', 1, 6, 7, 'TOP', 38);
+INSERT INTO public.guide_ligne VALUES (290, 'EVOCP013547/C0', 'EVO20221', 1, 6, 8, 'TOP', 24);
+INSERT INTO public.guide_ligne VALUES (291, 'EVOCP013547/C0', 'EVO30439', 1, 6, 9, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (292, 'EVOCP013547/C0', 'EVO21658', 1, 6, 10, 'TOP', 88);
+INSERT INTO public.guide_ligne VALUES (293, 'EVOCP013547/C0', 'EVO20154', 1, 6, 11, 'TOP', 78);
+INSERT INTO public.guide_ligne VALUES (294, 'EVOCP013547/C0', 'EVO31117', 1, 6, 12, 'TOP', 68);
+INSERT INTO public.guide_ligne VALUES (295, 'EVOCP013547/C0', 'EVO20157', 1, 6, 13, 'TOP', 16);
+INSERT INTO public.guide_ligne VALUES (296, 'EVOCP013547/C0', 'EVO20156', 1, 6, 14, 'TOP', 10);
+INSERT INTO public.guide_ligne VALUES (297, 'EVOCP013547/C0', 'EVO20123', 1, 6, 15, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (298, 'EVOCP013547/C0', 'EVO20159', 1, 6, 16, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (299, 'EVOCP013547/C0', 'EVO21685', 1, 10, 1, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (300, 'EVOCP013547/C0', 'EVO21698', 1, 10, 6, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (301, 'EVOCP013547/C0', 'EVO21707', 1, 11, 1, 'TOP', 4);
+INSERT INTO public.guide_ligne VALUES (302, 'EVOCP013547/C0', 'EVO21846', 1, 11, 2, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (303, 'EVOCP013547/C0', 'EVO20190', 1, 11, 3, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (304, 'EVOCP013547/C0', 'EVO20192', 1, 11, 4, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (305, 'EVOCP013547/C0', 'EVO20193', 1, 11, 5, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (306, 'EVOCP013547/C0', 'EVO21701', 1, 12, 1, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (307, 'EVOCP013547/C0', 'EVOP95864/PRG/05', 1, 12, 8, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (308, 'EVOCP013547/C0', 'EVO21647', 1, 14, 1, 'TOP', 2);
+INSERT INTO public.guide_ligne VALUES (309, 'EVOCP010021/B0', 'EVO20270', 2, 5, 15, 'TOP', 118200);
+INSERT INTO public.guide_ligne VALUES (310, 'EVOCP010021/B0', 'EVO20147', 2, 5, 16, 'TOP', 59100);
+INSERT INTO public.guide_ligne VALUES (311, 'EVOCP010021/B0', 'EVO21702', 2, 6, 8, 'TOP', 59100);
+INSERT INTO public.guide_ligne VALUES (312, 'EVOCP010021/B0', 'EVO21833', 1, 6, 8, 'TOP', 59100);
+INSERT INTO public.guide_ligne VALUES (313, 'EVOCP010021/B0', 'EVO21699', 1, 10, 1, 'TOP', 59100);
+INSERT INTO public.guide_ligne VALUES (314, 'EVOCP010037/E0', 'EVO21650', 2, 4, 7, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (315, 'EVOCP010037/E0', 'EVO21840', 2, 4, 8, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (316, 'EVOCP010037/E0', 'EVO21834', 2, 5, 12, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (317, 'EVOCP010037/E0', 'EVO20891', 2, 5, 13, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (318, 'EVOCP010037/E0', 'EVO20122', 2, 5, 14, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (319, 'EVOCP010037/E0', 'EVO20111', 2, 5, 15, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (320, 'EVOCP010037/E0', 'EVO20150', 2, 5, 16, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (321, 'EVOCP010037/E0', 'EVO20209', 2, 6, 2, 'TOP', 36);
+INSERT INTO public.guide_ligne VALUES (322, 'EVOCP010037/E0', 'EVO20147', 2, 6, 3, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (323, 'EVOCP010037/E0', 'EVO20148', 2, 6, 4, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (324, 'EVOCP010037/E0', 'EVO20170', 2, 6, 5, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (325, 'EVOCP010037/E0', 'EVO21836', 2, 6, 6, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (326, 'EVOCP010037/E0', 'EVO21838', 2, 6, 7, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (327, 'EVOCP010037/E0', 'EVO21667', 2, 6, 8, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (328, 'EVOCP010037/E0', 'EVO20123', 2, 6, 9, 'TOP', 96);
+INSERT INTO public.guide_ligne VALUES (329, 'EVOCP010037/E0', 'EVO20144', 2, 6, 10, 'TOP', 42);
+INSERT INTO public.guide_ligne VALUES (330, 'EVOCP010037/E0', 'EVO21837', 2, 6, 11, 'TOP', 36);
+INSERT INTO public.guide_ligne VALUES (331, 'EVOCP010037/E0', 'EVO20132', 2, 6, 12, 'TOP', 36);
+INSERT INTO public.guide_ligne VALUES (332, 'EVOCP010037/E0', 'EVO22926', 2, 6, 13, 'TOP', 24);
+INSERT INTO public.guide_ligne VALUES (333, 'EVOCP010037/E0', 'EVO21669', 2, 6, 14, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (334, 'EVOCP010037/E0', 'EVO20129', 2, 6, 15, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (335, 'EVOCP010037/E0', 'EVO20127', 2, 6, 16, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (336, 'EVOCP010037/E0', 'EVO21693', 1, 5, 8, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (337, 'EVOCP010037/E0', 'EVO20154', 1, 5, 9, 'TOP', 114);
+INSERT INTO public.guide_ligne VALUES (338, 'EVOCP010037/E0', 'EVO20799', 1, 5, 10, 'TOP', 36);
+INSERT INTO public.guide_ligne VALUES (339, 'EVOCP010037/E0', 'EVO20159', 1, 5, 11, 'TOP', 30);
+INSERT INTO public.guide_ligne VALUES (340, 'EVOCP010037/E0', 'EVO20353', 1, 5, 12, 'TOP', 24);
+INSERT INTO public.guide_ligne VALUES (341, 'EVOCP010037/E0', 'EVO22927', 1, 5, 13, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (342, 'EVOCP010037/E0', 'EVO20800', 1, 5, 14, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (343, 'EVOCP010037/E0', 'EVO20622', 1, 5, 15, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (344, 'EVOCP010037/E0', 'EVO20221', 1, 5, 16, 'TOP', 12);
+INSERT INTO public.guide_ligne VALUES (345, 'EVOCP010037/E0', 'EVO21702', 1, 6, 4, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (346, 'EVOCP010037/E0', 'EVO23164', 1, 6, 5, 'TOP', 18);
+INSERT INTO public.guide_ligne VALUES (347, 'EVOCP010037/E0', 'EVO20216', 1, 6, 6, 'TOP', 36);
+INSERT INTO public.guide_ligne VALUES (348, 'EVOCP010037/E0', 'EVO21833', 1, 6, 7, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (349, 'EVOCP010037/E0', 'EVO21659', 1, 6, 8, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (350, 'EVOCP010037/E0', 'EVO21708', 1, 10, 1, 'TOP', 6);
+INSERT INTO public.guide_ligne VALUES (351, 'EVOCP013463/B0', 'EVO21883', 2, 5, 5, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (352, 'EVOCP013463/B0', 'EVO31129', 2, 6, 8, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (353, 'EVOCP013463/B0', 'EVO31127', 2, 6, 9, 'TOP', 120000);
+INSERT INTO public.guide_ligne VALUES (354, 'EVOCP013463/B0', 'EVO31122', 2, 6, 10, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (355, 'EVOCP013463/B0', 'EVO31132', 2, 6, 11, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (356, 'EVOCP013463/B0', 'EVO31120', 2, 6, 12, 'TOP', 180000);
+INSERT INTO public.guide_ligne VALUES (357, 'EVOCP013463/B0', 'EVO31126', 2, 6, 13, 'TOP', 90000);
+INSERT INTO public.guide_ligne VALUES (358, 'EVOCP013463/B0', 'EVO31128', 2, 6, 14, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (359, 'EVOCP013463/B0', 'EVO31125', 2, 6, 15, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (360, 'EVOCP013463/B0', 'EVO31121', 2, 6, 16, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (361, 'EVOCP013463/B0', 'EVO23180', 1, 6, 10, 'TOP', 120000);
+INSERT INTO public.guide_ligne VALUES (362, 'EVOCP013463/B0', 'EVO31135', 1, 6, 11, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (363, 'EVOCP013463/B0', 'EVO31123', 1, 6, 12, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (364, 'EVOCP013463/B0', 'EVO31131', 1, 6, 13, 'TOP', 120000);
+INSERT INTO public.guide_ligne VALUES (365, 'EVOCP013463/B0', 'EVO31133', 1, 6, 14, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (366, 'EVOCP013463/B0', 'EVO31130', 1, 6, 15, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (367, 'EVOCP013463/B0', 'EVO31124', 1, 6, 16, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (368, 'EVOCP013463/B0', 'EVO31134', 1, 10, 1, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (369, 'EVOCP010047/C1', 'EVO20353', 2, 5, 10, 'BOT', 12000);
+INSERT INTO public.guide_ligne VALUES (370, 'EVOCP010047/C1', 'EVO20157', 2, 5, 11, 'BOT', 12000);
+INSERT INTO public.guide_ligne VALUES (371, 'EVOCP010047/C1', 'EVO20154', 2, 5, 12, 'BOT', 12000);
+INSERT INTO public.guide_ligne VALUES (372, 'EVOCP010047/C1', 'EVO23124', 2, 5, 13, 'BOT', 6000);
+INSERT INTO public.guide_ligne VALUES (373, 'EVOCP010047/C1', 'EVO20111', 2, 5, 14, 'BOT', 6000);
+INSERT INTO public.guide_ligne VALUES (374, 'EVOCP010047/C1', 'EVO23123', 2, 5, 15, 'BOT', 3000);
+INSERT INTO public.guide_ligne VALUES (375, 'EVOCP010047/C1', 'EVO20144', 2, 5, 16, 'BOT', 3000);
+INSERT INTO public.guide_ligne VALUES (376, 'EVOCP010047/C1', 'EVO23188', 2, 6, 5, 'BOT', 3000);
+INSERT INTO public.guide_ligne VALUES (377, 'EVOCP010047/C1', 'EVO21716', 2, 6, 6, 'BOT', 3000);
+INSERT INTO public.guide_ligne VALUES (378, 'EVOCP010047/C1', 'EVO23126', 2, 6, 7, 'BOT', 12000);
+INSERT INTO public.guide_ligne VALUES (379, 'EVOCP010047/C1', 'EVO21717', 2, 6, 8, 'BOT', 3000);
+INSERT INTO public.guide_ligne VALUES (380, 'EVOCP010047/C1', 'EVO21708', 1, 5, 3, 'BOT', 3000);
+INSERT INTO public.guide_ligne VALUES (381, 'EVOCP010047/C1', 'EVO21707', 1, 5, 4, 'BOT', 6000);
+INSERT INTO public.guide_ligne VALUES (382, 'EVOCP010047/C1', 'EVO21704', 1, 5, 5, 'BOT', 6000);
+INSERT INTO public.guide_ligne VALUES (383, 'EVOCP010047/C1', 'EVO22309', 1, 6, 7, 'BOT', 6000);
+INSERT INTO public.guide_ligne VALUES (384, 'EVOCP010047/C1', 'EVO21833', 1, 6, 8, 'BOT', 3000);
+INSERT INTO public.guide_ligne VALUES (385, 'EVOCP010047/C1', 'EVO21699', 1, 10, 1, 'BOT', 3000);
+INSERT INTO public.guide_ligne VALUES (386, 'EVOCP010047/C1', 'EVO23125', 2, 5, 5, 'TOP', 3000);
+INSERT INTO public.guide_ligne VALUES (387, 'EVOCP010047/C1', 'EVO21824', 2, 5, 6, 'TOP', 3000);
+INSERT INTO public.guide_ligne VALUES (388, 'EVOCP010047/C1', 'EVO22525', 2, 5, 7, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (389, 'EVOCP010047/C1', 'EVO20621', 2, 5, 8, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (390, 'EVOCP010047/C1', 'EVO21690', 2, 6, 10, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (391, 'EVOCP010047/C1', 'EVO20606', 2, 6, 11, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (392, 'EVOCP010047/C1', 'EVO20122', 2, 6, 12, 'TOP', 18000);
+INSERT INTO public.guide_ligne VALUES (393, 'EVOCP010047/C1', 'EVO20111', 2, 6, 13, 'TOP', 12000);
+INSERT INTO public.guide_ligne VALUES (394, 'EVOCP010047/C1', 'EVO21683', 2, 6, 14, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (395, 'EVOCP010047/C1', 'EVO21674', 2, 6, 15, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (396, 'EVOCP010047/C1', 'EVO21671', 2, 6, 16, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (397, 'EVOCP010047/C1', 'EVO20622', 1, 5, 9, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (398, 'EVOCP010047/C1', 'EVO20154', 1, 5, 10, 'TOP', 18000);
+INSERT INTO public.guide_ligne VALUES (399, 'EVOCP010047/C1', 'EVO20129', 1, 5, 11, 'TOP', 9000);
+INSERT INTO public.guide_ligne VALUES (400, 'EVOCP010047/C1', 'EVO21679', 1, 5, 12, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (401, 'EVOCP010047/C1', 'EVO20799', 1, 5, 13, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (402, 'EVOCP010047/C1', 'EVO20157', 1, 5, 14, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (403, 'EVOCP010047/C1', 'EVO20123', 1, 5, 15, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (404, 'EVOCP010047/C1', 'EVO23123', 1, 5, 16, 'TOP', 3000);
+INSERT INTO public.guide_ligne VALUES (405, 'EVOCP010047/C1', 'EVO23188', 1, 6, 6, 'TOP', 3000);
+INSERT INTO public.guide_ligne VALUES (406, 'EVOCP010047/C1', 'EVO21711', 1, 6, 7, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (407, 'EVOCP010047/C1', 'EVO21656', 1, 6, 8, 'TOP', 6000);
+INSERT INTO public.guide_ligne VALUES (408, 'EVOCP010051/A9', 'EVO20209', 2, 6, 9, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (409, 'EVOCP010051/A9', 'EVO22306', 2, 6, 10, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (410, 'EVOCP010051/A9', 'EVO20123', 2, 6, 11, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (411, 'EVOCP010051/A9', 'EVO20122', 2, 6, 12, 'TOP', 180000);
+INSERT INTO public.guide_ligne VALUES (412, 'EVOCP010051/A9', 'EVO20130', 2, 6, 13, 'TOP', 120000);
+INSERT INTO public.guide_ligne VALUES (413, 'EVOCP010051/A9', 'EVO20890', 2, 6, 14, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (414, 'EVOCP010051/A9', 'EVO20154', 2, 6, 15, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (415, 'EVOCP010051/A9', 'EVO20111', 2, 6, 16, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (416, 'EVOCP010051/A9', 'EVO22028', 2, 10, 1, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (417, 'EVOCP010051/A9', 'EVO28955', 2, 10, 2, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (418, 'EVOCP010051/A9', 'EVO28968', 1, 6, 13, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (419, 'EVOCP010051/A9', 'EVO28758', 1, 6, 14, 'TOP', 120000);
+INSERT INTO public.guide_ligne VALUES (420, 'EVOCP010051/A9', 'EVO20221', 1, 6, 15, 'TOP', 180000);
+INSERT INTO public.guide_ligne VALUES (421, 'EVOCP010051/A9', 'EVO20129', 1, 6, 16, 'TOP', 180000);
+INSERT INTO public.guide_ligne VALUES (422, 'EVOCP010053/F0', 'EVO21866', 2, 6, 2, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (423, 'EVOCP010053/F0', 'EVO21867', 2, 6, 3, 'TOP', 180000);
+INSERT INTO public.guide_ligne VALUES (424, 'EVOCP010053/F0', 'EVO21864', 2, 6, 4, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (425, 'EVOCP010053/F0', 'EVO21865', 2, 6, 5, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (426, 'EVOCP010053/F0', 'EVO21869', 2, 6, 6, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (427, 'EVOCP010053/F0', 'EVO21870', 2, 6, 7, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (428, 'EVOCP010053/F0', 'EVO21872', 2, 6, 8, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (429, 'EVOCP010053/F0', 'EVO21879', 2, 6, 9, 'TOP', 120000);
+INSERT INTO public.guide_ligne VALUES (430, 'EVOCP010053/F0', 'EVO21873', 2, 6, 10, 'TOP', 120000);
+INSERT INTO public.guide_ligne VALUES (431, 'EVOCP010053/F0', 'EVO21881', 2, 6, 11, 'TOP', 90000);
+INSERT INTO public.guide_ligne VALUES (432, 'EVOCP010053/F0', 'EVO30396', 2, 6, 12, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (433, 'EVOCP010053/F0', 'EVO21874', 2, 6, 13, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (434, 'EVOCP010053/F0', 'EVO21871', 2, 6, 14, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (435, 'EVOCP010053/F0', 'EVO21876', 2, 6, 15, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (436, 'EVOCP010053/F0', 'EVO21875', 2, 6, 16, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (437, 'EVOCP010053/F0', 'EVO30397', 2, 10, 1, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (438, 'EVOCP010053/F0', 'EVO21883', 1, 5, 5, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (439, 'EVOCP010053/F0', 'EVO23485', 1, 6, 5, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (440, 'EVOCP010053/F0', 'EVO23180', 1, 6, 6, 'TOP', 120000);
+INSERT INTO public.guide_ligne VALUES (441, 'EVOCP010053/F0', 'EVO21887', 1, 6, 7, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (442, 'EVOCP010053/F0', 'EVO21880', 1, 6, 8, 'TOP', 180000);
+INSERT INTO public.guide_ligne VALUES (443, 'EVOCP010053/F0', 'EVO21868', 1, 6, 9, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (444, 'EVOCP010053/F0', 'EVO21886', 1, 6, 10, 'TOP', 120000);
+INSERT INTO public.guide_ligne VALUES (445, 'EVOCP010053/F0', 'EVO21888', 1, 6, 11, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (446, 'EVOCP010053/F0', 'EVO21885', 1, 6, 12, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (447, 'EVOCP010053/F0', 'EVO21882', 1, 6, 13, 'TOP', 60000);
+INSERT INTO public.guide_ligne VALUES (448, 'EVOCP010053/F0', 'EVO21878', 1, 6, 14, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (449, 'EVOCP010053/F0', 'EVO21877', 1, 6, 15, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (450, 'EVOCP010053/F0', 'EVO21863', 1, 6, 16, 'TOP', 30000);
+INSERT INTO public.guide_ligne VALUES (451, 'EVOCP010053/F0', 'EVO21662', 1, 14, 1, 'TOP', 30000);
+
+
+--
+-- TOC entry 4930 (class 0 OID 24879)
+-- Dependencies: 222
+-- Data for Name: historique; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.historique VALUES (1, '2026-07-10 19:29:33.93279+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'Ahlem', 'my100', 'EVOCP013463/B0', 'EVO20209', 'vfdsvs', 6, 2, NULL, NULL);
+INSERT INTO public.historique VALUES (2, '2026-07-10 19:29:58.103708+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'Ahlem', 'my100', 'EVOCP013463/B0', 'EVO20147', 'xc', 6, 3, NULL, NULL);
+INSERT INTO public.historique VALUES (3, '2026-07-12 17:22:03.103812+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'ahlem', 'my100', 'EVOCP013463/B0', 'EVO21883', 'fdvd', 5, 5, NULL, NULL);
+INSERT INTO public.historique VALUES (4, '2026-07-14 13:37:23.924748+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'ahlem', 'my100', 'EVOCP013463/B0', 'EVO21883', 'rregwr', 5, 5, NULL, NULL);
+INSERT INTO public.historique VALUES (5, '2026-07-14 14:03:39.138845+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO21883', 'hgdfehd', 5, 5, NULL, NULL);
+INSERT INTO public.historique VALUES (6, '2026-07-14 22:35:20.176207+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO21883', 'hgerhe', 5, 5, NULL, NULL);
+INSERT INTO public.historique VALUES (7, '2026-07-14 22:36:29.122112+01', 'raboutage_rechargement', 'LVL', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO21883', 'hgerhe', 5, 5, NULL, 'Old bobine=EVO21883 check ok');
+INSERT INTO public.historique VALUES (8, '2026-07-15 00:13:49.59718+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO21883', 'gsgsd', 5, 5, 'TOP', NULL);
+INSERT INTO public.historique VALUES (9, '2026-07-15 00:17:42.837636+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO21883', 'fwef', 5, 5, 'BOT', NULL);
+INSERT INTO public.historique VALUES (10, '2026-07-15 00:21:19.862746+01', 'raboutage_rechargement', 'LVL', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO21883', 'fwef', 5, 5, 'BOT', 'Old bobine=EVO21883 check ok');
+INSERT INTO public.historique VALUES (11, '2026-07-16 01:11:58.040938+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO21883', 'asfaf', 5, 5, 'BOT', NULL);
+INSERT INTO public.historique VALUES (12, '2026-07-16 09:18:24.179495+01', 'raboutage_rechargement', 'LVL', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO21883', 'asfaf', 5, 5, 'BOT', 'Old bobine=EVO21883 check ok');
+INSERT INTO public.historique VALUES (13, '2026-07-23 14:22:28.922764+01', 'suivi_plan_chargement', 'LVL', 'EVOLIS', 'amine', 'my100', 'EVOCP013463/B0', 'EVO21883', 'EVO21883', 5, 5, 'TOP', NULL);
+INSERT INTO public.historique VALUES (14, '2026-07-24 11:12:02.216903+01', 'suivi_plan_chargement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO21883', 'few', 5, 5, 'TOP', NULL);
+INSERT INTO public.historique VALUES (15, '2026-07-24 13:20:08.038703+01', 'suivi_plan_chargement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31129', 'w', 6, 8, 'TOP', NULL);
+INSERT INTO public.historique VALUES (16, '2026-07-24 13:20:14.173975+01', 'suivi_plan_chargement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31127', 'w', 6, 9, 'TOP', NULL);
+INSERT INTO public.historique VALUES (17, '2026-07-24 13:20:22.166982+01', 'suivi_plan_chargement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31122', 'w', 6, 10, 'TOP', NULL);
+INSERT INTO public.historique VALUES (18, '2026-07-24 13:20:27.960411+01', 'suivi_plan_chargement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31132', 'w', 6, 11, 'TOP', NULL);
+INSERT INTO public.historique VALUES (19, '2026-07-24 13:20:33.568205+01', 'suivi_plan_chargement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31120', 'w', 6, 12, 'TOP', NULL);
+INSERT INTO public.historique VALUES (20, '2026-07-24 13:29:42.687769+01', 'reordonnancement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31132', 'w', 12, 11, 'TOP', 'Réordonnancement SLOT | Ancien SLOT=6 | Nouveau SLOT=12');
+INSERT INTO public.historique VALUES (21, '2026-07-24 13:29:42.688026+01', 'reordonnancement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31122', 'w', 12, 10, 'TOP', 'Réordonnancement SLOT | Ancien SLOT=6 | Nouveau SLOT=12');
+INSERT INTO public.historique VALUES (22, '2026-07-24 13:29:42.68652+01', 'reordonnancement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31120', 'w', 12, 12, 'TOP', 'Réordonnancement SLOT | Ancien SLOT=6 | Nouveau SLOT=12');
+INSERT INTO public.historique VALUES (23, '2026-07-24 13:29:42.773858+01', 'reordonnancement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31127', 'w', 12, 9, 'TOP', 'Réordonnancement SLOT | Ancien SLOT=6 | Nouveau SLOT=12');
+INSERT INTO public.historique VALUES (24, '2026-07-24 13:29:42.773604+01', 'reordonnancement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31129', 'w', 12, 8, 'TOP', 'Réordonnancement SLOT | Ancien SLOT=6 | Nouveau SLOT=12');
+INSERT INTO public.historique VALUES (25, '2026-07-24 13:31:02.425506+01', 'raboutage_rechargement', 'laval', 'EVOLIS', 'oussema', 'my100', 'EVOCP013463/B0', 'EVO31127', 'w', 12, 9, 'TOP', 'Old bobine=EVO31127 check ok');
+
+
+--
+-- TOC entry 4932 (class 0 OID 24890)
+-- Dependencies: 224
+-- Data for Name: ilots; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.ilots VALUES (1, 'CMS');
+INSERT INTO public.ilots VALUES (2, 'INDUS');
+INSERT INTO public.ilots VALUES (3, 'AERO');
+INSERT INTO public.ilots VALUES (4, 'CABLE');
+INSERT INTO public.ilots VALUES (5, 'ZEPHYR');
+INSERT INTO public.ilots VALUES (6, 'ILME');
+
+
+--
+-- TOC entry 4934 (class 0 OID 24895)
+-- Dependencies: 226
+-- Data for Name: machine; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.machine VALUES (1, 'my15');
+INSERT INTO public.machine VALUES (2, 'my100');
+
+
+--
+-- TOC entry 4936 (class 0 OID 24899)
+-- Dependencies: 228
+-- Data for Name: ordres_fabrication; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.ordres_fabrication VALUES (1, 'EVOCP013463/B0', 1, 1, '2026-07-22 12:40:49.53608');
+INSERT INTO public.ordres_fabrication VALUES (804731, 'EVOCP010053/F0', 200, 2, '2026-07-24 20:11:12.935496');
+INSERT INTO public.ordres_fabrication VALUES (804595, 'EVOCP011470/F0', 50, 2, '2026-07-24 20:11:12.935496');
+INSERT INTO public.ordres_fabrication VALUES (804742, 'EVOCP010349/G1', 50, 2, '2026-07-24 20:11:12.935496');
+INSERT INTO public.ordres_fabrication VALUES (804751, 'EVOCP010049/B0', 2970, 2, '2026-07-24 20:11:12.935496');
+INSERT INTO public.ordres_fabrication VALUES (804727, 'PRK100003081', 300, 2, '2026-07-24 20:11:12.935496');
+INSERT INTO public.ordres_fabrication VALUES (10, 'EVOCP013463/B0', 200, 3, '2026-07-25 12:06:47.424542');
+INSERT INTO public.ordres_fabrication VALUES (20, 'EVOCP013463/B0', 200, 2, '2026-07-25 12:18:54.44948');
+INSERT INTO public.ordres_fabrication VALUES (21, 'EVOCP013463/B0', 300, 1, '2026-07-26 20:16:07.135451');
+
+
+--
+-- TOC entry 4937 (class 0 OID 24903)
+-- Dependencies: 229
+-- Data for Name: postes_detection; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.postes_detection VALUES (1, 'AOI CyberOptic FLEX Ultra', 1);
+INSERT INTO public.postes_detection VALUES (2, 'Controle Cable', 4);
+
+
+--
+-- TOC entry 4946 (class 0 OID 25028)
+-- Dependencies: 238
+-- Data for Name: sessions_controle; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.sessions_controle VALUES (1, 1, '2026-07-30 22:32:50.827523', 1, 4234, 20, NULL, NULL);
+
+
+--
+-- TOC entry 4939 (class 0 OID 24908)
+-- Dependencies: 231
+-- Data for Name: sites; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.sites VALUES (1, 'pgx', '2026-07-18 18:00:00.95775+01');
+INSERT INTO public.sites VALUES (2, 'laval', '2026-07-18 18:00:00.95775+01');
+INSERT INTO public.sites VALUES (3, 'Ilme', '2026-07-18 18:00:00.95775+01');
+
+
+--
+-- TOC entry 4941 (class 0 OID 24914)
+-- Dependencies: 233
+-- Data for Name: type_defauts; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.type_defauts VALUES (12, 'Brasage', 1);
+INSERT INTO public.type_defauts VALUES (13, 'Assemblage', 1);
+INSERT INTO public.type_defauts VALUES (14, 'Composants', 1);
+INSERT INTO public.type_defauts VALUES (15, 'Aspect', 1);
+INSERT INTO public.type_defauts VALUES (16, 'Brasage', 2);
+INSERT INTO public.type_defauts VALUES (17, 'Assemblage', 2);
+INSERT INTO public.type_defauts VALUES (18, 'Cablage', 2);
+INSERT INTO public.type_defauts VALUES (19, 'Aspect', 2);
+INSERT INTO public.type_defauts VALUES (20, 'RAS', 2);
+INSERT INTO public.type_defauts VALUES (21, 'Composants', 2);
+
+
+--
+-- TOC entry 4943 (class 0 OID 24918)
+-- Dependencies: 235
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.users VALUES (1, 'oussema', '$argon2id$v=19$m=65536,t=3,p=4$pEMAqdZo8569gaN0usUetQ$9KlMRrrRRKdWwHUNNt6rTBfVjLTORueQw2d3/3VGXvg', 'admin', '2026-07-11 22:26:36.940536+01');
+INSERT INTO public.users VALUES (2, 'ahlem', '$argon2id$v=19$m=65536,t=3,p=4$gm35QhNm1Syhh0rw6Ionrg$OafRq2x1NXTjBEADl+y3FxmuptfIh7ahholA5JF508g', 'operateur', '2026-07-12 13:04:14.836191+01');
+INSERT INTO public.users VALUES (4, 'mahsouna', '$argon2id$v=19$m=65536,t=3,p=4$568cowUCIUcz8oglU6fmyw$Xiq45CElBnNqDYeqK4J0AaTIvxHDcsRgmXshwrKqHZw', 'operateur', '2026-07-22 20:03:27.14499+01');
+INSERT INTO public.users VALUES (5, 'za3ter', '$argon2id$v=19$m=65536,t=3,p=4$v/IrLRmetbveiMQdf2SgNA$z5PaoukA1+zamUrSgE7NasVY8KaunwdB/gysBjzLNZs', 'operateur', '2026-07-22 20:28:59.671702+01');
+INSERT INTO public.users VALUES (6, 'youssef', '$argon2id$v=19$m=65536,t=3,p=4$Vqv4FCBxDyhEBPXTaYWklQ$IguHg5Ar84CVpu1n9bwGQ5A2AARsKHuKuhtlNFfKSyM', 'controleur', '2026-07-22 20:53:08.21131+01');
+INSERT INTO public.users VALUES (3, 'amine', '$argon2id$v=19$m=65536,t=3,p=4$5iMJjSOCr/jvQIPqpZDVDA$k/bpawcO5aw55V2EoPNsd+YMDBD2Coah9HrNYX1W6E8', 'operateur', '2026-07-12 16:45:55.216824+01');
+INSERT INTO public.users VALUES (9, 'JLASSI  KAOUTHER', '$argon2id$v=19$m=65536,t=3,p=4$g6RH4iGmCPme9S5y7hzc0Q$dSi81upHrM/Odzqwi947wL+Gj9vNr11W1E/hvI9ms1o', 'controleur', '2026-07-24 19:52:06.079611+01');
+INSERT INTO public.users VALUES (10, 'HAMDI NASSIMA', '$argon2id$v=19$m=65536,t=3,p=4$LY9HJIvchYlhIS2PWtIX7A$3P5Mzf24iArsFKXrEznD8MRdFYS0nYor2iair2/vt+A', 'controleur', '2026-07-24 19:52:15.367541+01');
+
+
+--
+-- TOC entry 4966 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: clients_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.clients_id_seq', 5, true);
+
+
+--
+-- TOC entry 4967 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: code_erreur_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.code_erreur_id_seq', 34, true);
+
+
+--
+-- TOC entry 4968 (class 0 OID 0)
+-- Dependencies: 239
+-- Name: defauts_detectes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.defauts_detectes_id_seq', 5, true);
+
+
+--
+-- TOC entry 4969 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: guide_ligne_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.guide_ligne_id_seq', 451, true);
+
+
+--
+-- TOC entry 4970 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: historique_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.historique_id_seq', 25, true);
+
+
+--
+-- TOC entry 4971 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: ilots_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.ilots_id_seq', 6, true);
+
+
+--
+-- TOC entry 4972 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: machine_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.machine_id_seq', 2, true);
+
+
+--
+-- TOC entry 4973 (class 0 OID 0)
+-- Dependencies: 230
+-- Name: postes_detection_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.postes_detection_id_seq', 2, true);
+
+
+--
+-- TOC entry 4974 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: sessions_controle_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sessions_controle_id_seq', 1, true);
+
+
+--
+-- TOC entry 4975 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: sites_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sites_id_seq', 3, true);
+
+
+--
+-- TOC entry 4976 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: type_defauts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.type_defauts_id_seq', 21, true);
+
+
+--
+-- TOC entry 4977 (class 0 OID 0)
+-- Dependencies: 236
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 10, true);
+
+
+--
+-- TOC entry 4727 (class 2606 OID 24938)
+-- Name: cartes cartes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cartes
+    ADD CONSTRAINT cartes_pkey PRIMARY KEY (reference);
+
+
+--
+-- TOC entry 4729 (class 2606 OID 24940)
+-- Name: clients clients_nom_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.clients
+    ADD CONSTRAINT clients_nom_key UNIQUE (nom);
+
+
+--
+-- TOC entry 4731 (class 2606 OID 24942)
+-- Name: clients clients_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.clients
+    ADD CONSTRAINT clients_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4733 (class 2606 OID 24944)
+-- Name: code_erreur code_erreur_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.code_erreur
+    ADD CONSTRAINT code_erreur_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4766 (class 2606 OID 25053)
+-- Name: defauts_detectes defauts_detectes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.defauts_detectes
+    ADD CONSTRAINT defauts_detectes_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4735 (class 2606 OID 24948)
+-- Name: guide_ligne guide_ligne_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.guide_ligne
+    ADD CONSTRAINT guide_ligne_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4740 (class 2606 OID 24950)
+-- Name: historique historique_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.historique
+    ADD CONSTRAINT historique_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4742 (class 2606 OID 24952)
+-- Name: ilots ilots_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ilots
+    ADD CONSTRAINT ilots_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4744 (class 2606 OID 24954)
+-- Name: machine machine_nom_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.machine
+    ADD CONSTRAINT machine_nom_key UNIQUE (nom);
+
+
+--
+-- TOC entry 4746 (class 2606 OID 24956)
+-- Name: machine machine_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.machine
+    ADD CONSTRAINT machine_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4748 (class 2606 OID 24958)
+-- Name: ordres_fabrication ordres_fabrication_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ordres_fabrication
+    ADD CONSTRAINT ordres_fabrication_pkey PRIMARY KEY (numero_of);
+
+
+--
+-- TOC entry 4750 (class 2606 OID 24960)
+-- Name: postes_detection postes_detection_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.postes_detection
+    ADD CONSTRAINT postes_detection_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4764 (class 2606 OID 25034)
+-- Name: sessions_controle sessions_controle_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sessions_controle
+    ADD CONSTRAINT sessions_controle_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4754 (class 2606 OID 24962)
+-- Name: sites sites_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sites
+    ADD CONSTRAINT sites_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4758 (class 2606 OID 24964)
+-- Name: type_defauts type_defauts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.type_defauts
+    ADD CONSTRAINT type_defauts_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4738 (class 2606 OID 24966)
+-- Name: guide_ligne uq_guide_ligne; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.guide_ligne
+    ADD CONSTRAINT uq_guide_ligne UNIQUE (reference_carte, reference_composant, machine_id, numero_slot, "position", face);
+
+
+--
+-- TOC entry 4752 (class 2606 OID 24968)
+-- Name: postes_detection uq_postes_detection_name; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.postes_detection
+    ADD CONSTRAINT uq_postes_detection_name UNIQUE (name);
+
+
+--
+-- TOC entry 4756 (class 2606 OID 24970)
+-- Name: sites uq_sites_name; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sites
+    ADD CONSTRAINT uq_sites_name UNIQUE (name);
+
+
+--
+-- TOC entry 4760 (class 2606 OID 24972)
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4762 (class 2606 OID 24974)
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_username_key UNIQUE (username);
+
+
+--
+-- TOC entry 4736 (class 1259 OID 24975)
+-- Name: idx_guide_ligne_carte_machine; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_guide_ligne_carte_machine ON public.guide_ligne USING btree (reference_carte, machine_id);
+
+
+--
+-- TOC entry 4767 (class 2606 OID 24976)
+-- Name: cartes cartes_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cartes
+    ADD CONSTRAINT cartes_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4768 (class 2606 OID 24981)
+-- Name: code_erreur code_erreur_type_defauts_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.code_erreur
+    ADD CONSTRAINT code_erreur_type_defauts_id_fkey FOREIGN KEY (type_defauts_id) REFERENCES public.type_defauts(id);
+
+
+--
+-- TOC entry 4778 (class 2606 OID 25059)
+-- Name: defauts_detectes defauts_detectes_code_erreur_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.defauts_detectes
+    ADD CONSTRAINT defauts_detectes_code_erreur_id_fkey FOREIGN KEY (code_erreur_id) REFERENCES public.code_erreur(id);
+
+
+--
+-- TOC entry 4779 (class 2606 OID 25054)
+-- Name: defauts_detectes defauts_detectes_session_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.defauts_detectes
+    ADD CONSTRAINT defauts_detectes_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.sessions_controle(id);
+
+
+--
+-- TOC entry 4769 (class 2606 OID 25001)
+-- Name: guide_ligne guide_ligne_machine_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.guide_ligne
+    ADD CONSTRAINT guide_ligne_machine_id_fkey FOREIGN KEY (machine_id) REFERENCES public.machine(id);
+
+
+--
+-- TOC entry 4770 (class 2606 OID 25006)
+-- Name: guide_ligne guide_ligne_reference_carte_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.guide_ligne
+    ADD CONSTRAINT guide_ligne_reference_carte_fkey FOREIGN KEY (reference_carte) REFERENCES public.cartes(reference);
+
+
+--
+-- TOC entry 4771 (class 2606 OID 25011)
+-- Name: ordres_fabrication ordres_fabrication_site_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ordres_fabrication
+    ADD CONSTRAINT ordres_fabrication_site_id_fkey FOREIGN KEY (site_id) REFERENCES public.sites(id);
+
+
+--
+-- TOC entry 4772 (class 2606 OID 25016)
+-- Name: postes_detection postes_detection_ilots_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.postes_detection
+    ADD CONSTRAINT postes_detection_ilots_id_fkey FOREIGN KEY (ilots_id) REFERENCES public.ilots(id);
+
+
+--
+-- TOC entry 4774 (class 2606 OID 25040)
+-- Name: sessions_controle sessions_controle_controleur_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sessions_controle
+    ADD CONSTRAINT sessions_controle_controleur_id_fkey FOREIGN KEY (controleur_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 4775 (class 2606 OID 25065)
+-- Name: sessions_controle sessions_controle_ilot_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sessions_controle
+    ADD CONSTRAINT sessions_controle_ilot_id_fkey FOREIGN KEY (ilot_id) REFERENCES public.ilots(id);
+
+
+--
+-- TOC entry 4776 (class 2606 OID 25035)
+-- Name: sessions_controle sessions_controle_numero_of_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sessions_controle
+    ADD CONSTRAINT sessions_controle_numero_of_fkey FOREIGN KEY (numero_of) REFERENCES public.ordres_fabrication(numero_of);
+
+
+--
+-- TOC entry 4777 (class 2606 OID 25070)
+-- Name: sessions_controle sessions_controle_poste_detection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sessions_controle
+    ADD CONSTRAINT sessions_controle_poste_detection_id_fkey FOREIGN KEY (poste_detection_id) REFERENCES public.postes_detection(id);
+
+
+--
+-- TOC entry 4773 (class 2606 OID 25021)
+-- Name: type_defauts type_defauts_postes_detection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.type_defauts
+    ADD CONSTRAINT type_defauts_postes_detection_id_fkey FOREIGN KEY (postes_detection_id) REFERENCES public.postes_detection(id);
+
+
+-- Completed on 2026-07-31 00:13:55
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict 9vegybv242yPxed8sReFtHf8SNfwt2hBAcisDSh2BYqFsELr7wpET2WjnLWzrGe
+

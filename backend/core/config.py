@@ -64,7 +64,7 @@ CHUNK_OVERLAP_TOKENS = 30    # à augmenter si tu passes à un modèle avec plus
 TOKENS_PER_WORD = 1.3        # estimation approx, pas de tokenizer dédié
 
 # Embeddings
-TEI_URL = "http://localhost:8080/embed"
+TEI_URL = "http://localhost:8080"
 EMBEDDING_BATCH_SIZE = 32
 SPARSE_MODEL_NAME = "Qdrant/bm25"
 
@@ -76,6 +76,6 @@ SPARSE_VECTOR_NAME = "sparse"
 
 
 
-GEMINI_MODEL = "gemini-3.7-flash"
+GEMINI_MODEL = "gemini-3.1-flash-lite"
 ROUTER_TOKEN_THRESHOLD = 100_000
 MAX_FILE_READ_CHARS = 20_000  # plafond de sécurité par lecture de fichier

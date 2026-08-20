@@ -1,0 +1,343 @@
+
+.gg-container {
+  min-height: 100vh;
+  padding: 30px;
+  background-color: #f4f4f5;
+  color: #27272a;
+  font-family: Arial, sans-serif;
+}
+
+
+.gg-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.gg-back {
+  padding: 10px 16px;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  background-color: #3f3f46;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.gg-back:hover {
+  border-color: #27272a;
+  background-color: #27272a;
+}
+
+.gg-title {
+  margin: 0;
+  color: #18181b;
+  font-size: 28px;
+}
+
+.gg-subtitle {
+  margin: 6px 0 0;
+  color: #52525b;
+  font-weight: 700;
+}
+
+/* =========================
+   Messages
+   ========================= */
+
+.gg-error {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid #a1a1aa;
+  border-left: 4px solid #52525b;
+  border-radius: 6px;
+  background-color: #e4e4e7;
+  color: #27272a;
+  font-weight: 700;
+  white-space: pre-line;
+}
+
+.gg-loading,
+.gg-empty {
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #52525b;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(24, 24, 27, 0.06);
+}
+
+/* =========================
+   Manual entry form
+   ========================= */
+
+.gg-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid #e4e4e7;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(24, 24, 27, 0.06);
+}
+
+.gg-input {
+  min-width: 180px;
+  height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #27272a;
+  font-size: 15px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.gg-input:focus {
+  border-color: #71717a;
+  box-shadow: 0 0 0 2px rgba(113, 113, 122, 0.16);
+}
+
+/* =========================
+   Buttons
+   ========================= */
+
+.gg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.gg-btn-add,
+.gg-btn-import {
+  border-color: #3f3f46;
+  background-color: #3f3f46;
+  color: #ffffff;
+}
+
+.gg-btn-add:hover,
+.gg-btn-import:hover {
+  border-color: #27272a;
+  background-color: #27272a;
+}
+
+/* Secondary actions */
+.gg-btn-edit,
+.gg-btn-template {
+  border-color: #a1a1aa;
+  background-color: #ffffff;
+  color: #27272a;
+}
+
+.gg-btn-edit:hover,
+.gg-btn-template:hover:not(:disabled) {
+  border-color: #71717a;
+  background-color: #f4f4f5;
+}
+
+/* Destructive action, neutral styling */
+.gg-btn-delete {
+  border-color: #a1a1aa;
+  background-color: #e4e4e7;
+  color: #27272a;
+}
+
+.gg-btn-delete:hover {
+  border-color: #71717a;
+  background-color: #d4d4d8;
+}
+
+.gg-btn:disabled {
+  border-color: #d4d4d8;
+  background-color: #e4e4e7;
+  color: #a1a1aa;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Spacing between table action buttons */
+.gg-table .gg-btn + .gg-btn {
+  margin-left: 8px;
+}
+
+.gg-import-section {
+  margin-bottom: 25px;
+  padding: 20px;
+  border: 1px solid #d4d4d8;
+  border-radius: 10px;
+  background-color: #fafafa;
+  box-shadow: 0 4px 12px rgba(24, 24, 27, 0.04);
+}
+
+.gg-import-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.gg-import-title {
+  margin: 0 0 6px;
+  color: #27272a;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.gg-import-text {
+  max-width: 650px;
+  margin: 0;
+  color: #71717a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.gg-import-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Label behaves like a button */
+.gg-btn-import {
+  cursor: pointer;
+}
+
+/* =========================
+   Table
+   ========================= */
+
+.gg-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(24, 24, 27, 0.06);
+}
+
+.gg-table th {
+  padding: 12px;
+  background-color: #27272a;
+  color: #ffffff;
+  text-align: left;
+}
+
+.gg-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e4e4e7;
+  vertical-align: middle;
+}
+
+.gg-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.gg-table tbody tr:hover {
+  background-color: #f4f4f5;
+}
+
+/* Face, machine and slot merged cells */
+.gg-table td[rowspan] {
+  padding-top: 16px;
+  border-right: 1px solid #d4d4d8;
+  background-color: #e4e4e7;
+  font-weight: 700;
+  vertical-align: top;
+}
+
+/* Keep action buttons on the same line */
+.gg-table td:last-child {
+  white-space: nowrap;
+}
+
+/* Inputs displayed during table editing */
+.gg-table .gg-input {
+  width: 100%;
+  min-width: 110px;
+}
+
+/* =========================
+   Responsive layout
+   ========================= */
+
+@media (max-width: 900px) {
+  .gg-container {
+    padding: 20px;
+  }
+
+  .gg-import-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gg-import-actions {
+    width: 100%;
+  }
+
+  .gg-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .gg-container {
+    padding: 15px;
+  }
+
+  .gg-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .gg-title {
+    font-size: 24px;
+  }
+
+  .gg-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gg-input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .gg-import-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gg-import-actions .gg-btn {
+    width: 100%;
+  }
+}

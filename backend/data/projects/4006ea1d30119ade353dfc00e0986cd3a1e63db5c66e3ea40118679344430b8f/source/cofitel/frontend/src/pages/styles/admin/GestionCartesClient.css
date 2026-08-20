@@ -1,0 +1,133 @@
+.gcc-container {
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  padding: 30px;
+  font-family: Arial, sans-serif;
+}
+
+.gcc-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.gcc-back {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #374151;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.gcc-back:hover {
+  background-color: #1f2937;
+}
+
+.gcc-title {
+  color: #1f2937;
+  font-size: 28px;
+}
+
+.gcc-error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.gcc-form {
+  display: flex;
+  gap: 12px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.gcc-input {
+  flex: 1;
+  height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 15px;
+  outline: none;
+}
+
+.gcc-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.gcc-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.gcc-btn-add {
+  background-color: #16a34a;
+  color: white;
+}
+
+.gcc-btn-add:hover {
+  background-color: #15803d;
+}
+
+.gcc-btn-guide {
+  background-color: #7c3aed;
+  color: white;
+}
+
+.gcc-btn-guide:hover {
+  background-color: #6d28d9;
+}
+
+.gcc-btn-delete {
+  background-color: #dc2626;
+  color: white;
+}
+
+.gcc-btn-delete:hover {
+  background-color: #b91c1c;
+}
+
+.gcc-loading,
+.gcc-empty {
+  color: #374151;
+  font-weight: bold;
+}
+
+.gcc-table {
+  width: 100%;
+  background-color: white;
+  border-collapse: collapse;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.gcc-table th {
+  background-color: #1f2937;
+  color: white;
+  padding: 12px;
+  text-align: left;
+}
+
+.gcc-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.gcc-table tr:hover {
+  background-color: #f9fafb;
+}

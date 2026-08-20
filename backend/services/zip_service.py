@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from fastapi import HTTPException, UploadFile
 
-from core.config import PROJECTS_DIR
+from core.config import EXCLUDE_DIRS, PROJECTS_DIR
 
 CHUNK_SIZE = 1024 * 1024        # 1 Mo
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024      # 50MB on disk — raw zip cap
@@ -36,32 +36,37 @@ async def save_and_hash_zip(zip_file: UploadFile, temporary_path: Path) -> str:
 
     return sha256.hexdigest()
 
+def _is_in_excluded_dir(member_filename: str) -> bool:
+    return any(part in EXCLUDE_DIRS for part in Path(member_filename).parts[:-1])
 
 def _validate_and_extract(archive_path: Path, target_dir: Path) -> None:
     """
-    Vérifie chaque entrée de l'archive avant extraction :
-    - refuse toute entrée qui sortirait de target_dir (Zip Slip)
-    - refuse les liens symboliques
-    - applique un plafond sur la taille totale décompressée et le nombre de fichiers
-    Lève ValueError si l'archive est jugée dangereuse.
+    Vérifie chaque entrée de l'archive avant extraction, en ignorant
+    d'emblée les dossiers connus comme bruit (node_modules, venv, .git,
+    __pycache__...) — ils ne sont ni comptés ni extraits, pour éviter
+    de bloquer des projets légitimes à cause de leurs dépendances.
     """
     resolved_target = target_dir.resolve()
     total_size = 0
     file_count = 0
+    members_to_extract = []
+
 
     with zipfile.ZipFile(archive_path, "r") as archive:
         for member in archive.infolist():
-            # liens symboliques : bit S_ISLNK dans les 16 bits hauts de external_attr
+            if member.is_dir():
+                continue
+
+            if _is_in_excluded_dir(member.filename):
+                continue
+
             is_symlink = (member.external_attr >> 16) & 0o170000 == 0o120000
             if is_symlink:
                 raise ValueError(f"Lien symbolique refusé dans l'archive : {member.filename}")
 
             member_path = (target_dir / member.filename).resolve()
-            if not str(member_path).startswith(str(resolved_target) + "\0"[:0]) and \
-               resolved_target not in member_path.parents and member_path != resolved_target:
-                # équivalent lisible : member_path doit être DANS resolved_target
-                if resolved_target not in member_path.parents:
-                    raise ValueError(f"Chemin suspect dans l'archive : {member.filename}")
+            if resolved_target not in member_path.parents:
+                raise ValueError(f"Chemin suspect dans l'archive : {member.filename}")
 
             total_size += member.file_size
             file_count += 1
@@ -73,8 +78,10 @@ def _validate_and_extract(archive_path: Path, target_dir: Path) -> None:
             if file_count > MAX_FILE_COUNT:
                 raise ValueError(f"Trop de fichiers dans l'archive (> {MAX_FILE_COUNT}).")
 
-        # tout validé — extraction effective
-        archive.extractall(target_dir)
+            members_to_extract.append(member)
+
+        for member in members_to_extract:
+            archive.extract(member, target_dir)
 
 
 async def import_zip_project(zip_file: UploadFile) -> dict:

@@ -1,21 +1,20 @@
+"""
+Vector store Qdrant (hybride dense+sparse) via langchain_qdrant.
+Remplace l'implémentation manuelle : la création des points, l'upsert
+et la recherche RRF hybride sont gérées par QdrantVectorStore.
+"""
+
 from langchain_core.documents import Document
 from langchain_qdrant import QdrantVectorStore, RetrievalMode
-from qdrant_client import AsyncQdrantClient, QdrantClient, models
+from qdrant_client import QdrantClient, models
 
-from core.config import (
-    DENSE_VECTOR_NAME,
-    QDRANT_COLLECTION_NAME,
-    QDRANT_URL,
-    SPARSE_VECTOR_NAME,
-)
+from core.config import DENSE_VECTOR_NAME, QDRANT_COLLECTION_NAME, QDRANT_URL, SPARSE_VECTOR_NAME
 from services.embedding_service import dense_embeddings, sparse_embeddings
 
-_sync_client = QdrantClient(url=QDRANT_URL)
-_async_client = AsyncQdrantClient(url=QDRANT_URL)
+_client = QdrantClient(url=QDRANT_URL)
 
 vector_store = QdrantVectorStore(
-    client=_sync_client,
-    async_client=_async_client,
+    client=_client,
     collection_name=QDRANT_COLLECTION_NAME,
     embedding=dense_embeddings,
     sparse_embedding=sparse_embeddings,
@@ -26,9 +25,6 @@ vector_store = QdrantVectorStore(
 
 
 async def insert_chunks(project_id: str, chunks: list[dict]) -> None:
-    """
-    Insère les chunks d'un projet. 
-    """
     documents = [
         Document(
             page_content=chunk["text"],
@@ -41,14 +37,7 @@ async def insert_chunks(project_id: str, chunks: list[dict]) -> None:
 
 
 async def search_chunks(project_id: str, query: str, limit: int = 10):
-    """
-    Recherche hybride (dense + sparse, fusion RRF) limitée à un projet.
-    """
     query_filter = models.Filter(
-        must=[
-            models.FieldCondition(
-                key="metadata.project_id", match=models.MatchValue(value=project_id)
-            )
-        ]
+        must=[models.FieldCondition(key="metadata.project_id", match=models.MatchValue(value=project_id))]
     )
     return await vector_store.asimilarity_search(query, k=limit, filter=query_filter)

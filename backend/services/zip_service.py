@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import shutil
 import zipfile
+from collections import defaultdict
 from pathlib import Path
 from uuid import uuid4
 
@@ -13,6 +14,7 @@ CHUNK_SIZE = 1024 * 1024        # 1 Mo
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024      # 50MB on disk — raw zip cap
 MAX_EXTRACTED_SIZE = 300 * 1024 * 1024  # 300MB uncompressed — decompression-bomb cap
 MAX_FILE_COUNT = 5000                    # guards against inode/file-count exhaustion
+_project_locks: dict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 
 
 async def save_and_hash_zip(zip_file: UploadFile, temporary_path: Path) -> str:
@@ -80,6 +82,12 @@ def _validate_and_extract(archive_path: Path, target_dir: Path) -> None:
 
             members_to_extract.append(member)
 
+        if not members_to_extract:
+            raise ValueError(
+                "This ZIP contains folders but no project files. Create a new ZIP that includes the files inside the project folder."
+            )
+
+        target_dir.mkdir(parents=True, exist_ok=False)
         for member in members_to_extract:
             archive.extract(member, target_dir)
 
@@ -94,47 +102,47 @@ async def import_zip_project(zip_file: UploadFile) -> dict:
 
     try:
         project_id = await save_and_hash_zip(zip_file=zip_file, temporary_path=temporary_path)
-
         project_directory = PROJECTS_DIR / project_id
         source_directory = project_directory / "source"
-
-        # lock par project_id : deux uploads du même contenu en même temps
-        # font la queue ici plutôt que de se marcher dessus
-        if source_directory.exists():
-            temporary_path.unlink(missing_ok=True)
-            return {
-                "project_id": project_id,
-                "filename": filename,
-                "status": "already_exists",
-                "project_path": str(source_directory.relative_to(PROJECTS_DIR.parent)),
-            }
 
         if not zipfile.is_zipfile(temporary_path):
             raise HTTPException(status_code=400, detail="Le fichier envoyé n'est pas une archive ZIP valide.")
 
-        project_directory.mkdir(parents=True, exist_ok=False)
+        # Serialize identical uploads and publish the source only after extraction succeeds.
+        async with _project_locks[project_id]:
+            if source_directory.is_dir():
+                return {
+                    "project_id": project_id,
+                    "filename": filename,
+                    "status": "already_exists",
+                    "project_path": str(source_directory.relative_to(PROJECTS_DIR.parent)),
+                }
 
-        try:
-            loop = asyncio.get_running_loop()
-            await loop.run_in_executor(None, _validate_and_extract, temporary_path, source_directory)
-        except (ValueError, zipfile.BadZipFile) as error:
-            shutil.rmtree(project_directory, ignore_errors=True)
-            raise HTTPException(status_code=400, detail=str(error)) from error
-        except Exception:
-            shutil.rmtree(project_directory, ignore_errors=True)
-            raise
+            created_project_directory = not project_directory.exists()
+            project_directory.mkdir(parents=True, exist_ok=True)
+            staging_directory = project_directory / f"source-import-{uuid4().hex}"
 
-        temporary_path.unlink(missing_ok=True)
+            try:
+                loop = asyncio.get_running_loop()
+                await loop.run_in_executor(None, _validate_and_extract, temporary_path, staging_directory)
+                staging_directory.rename(source_directory)
+            except (ValueError, zipfile.BadZipFile) as error:
+                raise HTTPException(status_code=400, detail=str(error)) from error
+            finally:
+                shutil.rmtree(staging_directory, ignore_errors=True)
+                if created_project_directory:
+                    try:
+                        project_directory.rmdir()
+                    except OSError:
+                        pass
 
-        return {
-            "project_id": project_id,
-            "filename": filename,
-            "status": "imported",
-            "project_path": str(source_directory.relative_to(PROJECTS_DIR.parent)),
-        }
-    except Exception:
-        temporary_path.unlink(missing_ok=True)
-        raise
+            return {
+                "project_id": project_id,
+                "filename": filename,
+                "status": "imported",
+                "project_path": str(source_directory.relative_to(PROJECTS_DIR.parent)),
+            }
 
     finally:
+        temporary_path.unlink(missing_ok=True)
         await zip_file.close()

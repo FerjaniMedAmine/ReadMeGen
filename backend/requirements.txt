@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 python-multipart
-tree-sitter-language-pack
-fastembed
-httpx
+python-dotenv
+langchain-core
+langchain-google-genai
+langgraph

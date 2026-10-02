@@ -8,10 +8,6 @@ PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 
-MAX_ZIP_SIZE = 50 * 1024 * 1024
-MAX_EXTRACTED_SIZE = 200 * 1024 * 1024
-
-
 # Filtrage des projets
 
 EXCLUDE_DIRS = {
@@ -36,46 +32,8 @@ MAX_TOTAL_FILES = 3000              # protection contre les repos
 
 
 
-EXTENSION_TO_LANGUAGE = {
-    ".py": "python",
-    ".js": "javascript",
-    ".jsx": "javascript",
-    ".ts": "typescript",
-    ".tsx": "tsx",
-    ".java": "java",
-    ".c": "c",
-    ".h": "c",
-    ".cpp": "cpp",
-    ".hpp": "cpp",
-    ".cc": "cpp",
-    ".cs": "c_sharp",
-    ".go": "go",
-    ".rb": "ruby",
-    ".php": "php",
-    ".rs": "rust",
-    ".kt": "kotlin",
-    ".swift": "swift",
-    ".scala": "scala",
-    ".sh": "bash",
-}
-
-CHUNK_MAX_TOKENS = 200       # plafond par chunk (marge sous les 512 de bge-small)
-CHUNK_OVERLAP_TOKENS = 30    # à augmenter si tu passes à un modèle avec plus de contexte
-TOKENS_PER_WORD = 1.3        # estimation approx, pas de tokenizer dédié
-
-# Embeddings
-TEI_URL = "http://localhost:8080"
-EMBEDDING_BATCH_SIZE = 32
-SPARSE_MODEL_NAME = "Qdrant/bm25"
-
-# Qdrant
-QDRANT_URL = "http://localhost:6333"
-QDRANT_COLLECTION_NAME = "ReadMeGen"
-DENSE_VECTOR_NAME = "dense"
-SPARSE_VECTOR_NAME = "sparse"
-
-
-
-GEMINI_MODEL = "gemini-3.1-flash-lite"
-ROUTER_TOKEN_THRESHOLD = 100_000
-MAX_FILE_READ_CHARS = 20_000  # plafond de sécurité par lecture de fichier
+GEMINI_MODEL = "gemini-3.5-flash-lite"
+MAX_FILE_READ_CHARS = 20_000
+MAX_TREE_CHARS = 500_000
+MAX_AGENTS = 8
+MAX_AGENT_FILES = 12

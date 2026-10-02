@@ -1,46 +1,41 @@
-"""
-Outils utilisés par les agents LangGraph : lecture de fichier, arborescence
-du projet, recherche hybride dans Qdrant. Créés via des factories pour
-capturer le project_id / chemin source propres à chaque exécution.
-"""
+"""File tools scoped to a specialist's coordinator-assigned paths."""
 
 from pathlib import Path
 
 from langchain_core.tools import tool
 
 from core.config import MAX_FILE_READ_CHARS
-from services.qdrant_service import search_chunks
 
 
-def build_file_tools(source_dir: Path) -> list:
+def build_file_tools(source_dir: Path, assigned_paths: list[str]) -> list:
+    allowed = set(assigned_paths)
+    root = source_dir.resolve()
+
     @tool
-    def read_file(relative_path: str) -> str:
-        """Lit le contenu d'un fichier du projet à partir de son chemin relatif (ex: 'src/main.py')."""
-        target = (source_dir / relative_path).resolve()
-        if source_dir.resolve() not in target.parents:
-            return "Erreur : chemin en dehors du projet."
+    def read_file(relative_path: str, start_line: int = 1) -> str:
+        """Read an assigned file from start_line with line numbers. Continue at the next line if truncated."""
+        if relative_path not in allowed:
+            return "File is not assigned to this agent."
+        if start_line < 1:
+            return "start_line must be at least 1."
+        target = (root / relative_path).resolve()
+        if root not in target.parents or not target.is_file():
+            return "File is unavailable or outside the project."
         try:
-            return target.read_text(encoding="utf-8")[:MAX_FILE_READ_CHARS]
+            content = target.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError) as error:
-            return f"Erreur de lecture : {error}"
+            return f"Could not read file: {error}"
+        lines = content.splitlines()
+        selected = []
+        length = 0
+        for number in range(start_line, len(lines) + 1):
+            line = f"{number}: {lines[number - 1]}"
+            if selected and length + len(line) > MAX_FILE_READ_CHARS:
+                break
+            selected.append(line)
+            length += len(line) + 1
+        next_line = start_line + len(selected)
+        continuation = f"\n[Continue with start_line={next_line}]" if next_line <= len(lines) else ""
+        return "\n".join(selected) + continuation
 
-    @tool
-    def get_project_tree() -> str:
-        """Retourne l'arborescence complète du projet (dossiers et fichiers)."""
-        lines = [
-            str(path.relative_to(source_dir))
-            for path in sorted(source_dir.rglob("*"))
-        ]
-        return "\n".join(lines)
-
-    return [read_file, get_project_tree]
-
-
-def build_qdrant_tool(project_id: str):
-    @tool
-    async def search_codebase(query: str) -> str:
-        """Recherche hybride (dense+sparse) dans le code indexé. Utilise des mots-clés précis (ex: nom de framework, pattern d'accès DB)."""
-        results = await search_chunks(project_id, query, limit=5)
-        return "\n---\n".join(r.page_content for r in results) or "Aucun résultat."
-
-    return search_codebase
+    return [read_file]

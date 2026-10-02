@@ -3,11 +3,9 @@ from pydantic import BaseModel
 from core.config import PROJECTS_DIR
 from core.status import get_status, set_status
 
-from services.indexing_service import index_project
 from services.zip_service import import_zip_project
 from services.filter_service import ProjectTooLargeError, filter_project_files
 from services.git_service import import_git_project
-from core.config import PROJECTS_DIR
 from services.agents_graph import generate_readme
 from fastapi.responses import PlainTextResponse
 
@@ -34,20 +32,21 @@ async def run_filtering(project_id: str):
         set_status(project_id, "error", detail=str(error))
         return
 
-    set_status(project_id, "indexing", file_count=len(files))
-
-    try:
-        chunk_count = await index_project(project_id, files)
-    except Exception as error:
-        set_status(project_id, "error", detail=f"Échec de l'indexation : {error}")
+    if not files:
+        set_status(project_id, "error", detail="Aucun fichier source lisible trouvé dans le projet.")
         return
 
-    set_status(
-        project_id, "generating_readme", file_count=len(files), chunk_count=chunk_count
-    )
+    set_status(project_id, "planning", file_count=len(files))
 
     try:
-        readme_content = await generate_readme(project_id, source_dir)
+        readme_content = await generate_readme(
+            project_id,
+            source_dir,
+            files,
+            on_progress=lambda phase, **extra: set_status(
+                project_id, phase, file_count=len(files), **extra
+            ),
+        )
     except Exception as error:
         set_status(
             project_id, "error", detail=f"Échec de la génération du README : {error}"
@@ -61,7 +60,6 @@ async def run_filtering(project_id: str):
         project_id,
         "ready",
         file_count=len(files),
-        chunk_count=chunk_count,
         files=[f.relative_path for f in files],
     )
 
@@ -72,9 +70,16 @@ async def upload_zip(
 ):
     result = await import_zip_project(zip_file)
 
-    if result["status"] == "imported":
-        set_status(result["project_id"], "extracting")
-        background_tasks.add_task(run_filtering, result["project_id"])
+    project_id = result["project_id"]
+    current = get_status(project_id)
+    if current and current["status"] in {"extracting", "filtering", "planning", "analyzing", "writing"}:
+        return result
+
+    if result["status"] == "already_exists" and (PROJECTS_DIR / project_id / "README.md").is_file():
+        set_status(project_id, "ready")
+    else:
+        set_status(project_id, "extracting")
+        background_tasks.add_task(run_filtering, project_id)
 
     return result
 

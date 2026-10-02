@@ -3,7 +3,6 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from core.config import PROJECTS_DIR
 from routers.ingestion import router as ingestion_router
 
 app = FastAPI()

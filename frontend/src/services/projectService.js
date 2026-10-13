@@ -1,43 +1,23 @@
-import httpClient from "./httpClient";
+import { request } from "./api";
 
 const projectService = {
   uploadZip: async (file) => {
     const formData = new FormData();
     formData.append("zip_file", file);
 
-    const response = await httpClient.post(
-      "/projects/upload-zip",
-      formData
-    );
-
-    return response.data;
+    return request("/projects/upload-zip", { method: "POST", body: formData });
   },
 
   importGit: async (gitUrl) => {
-    const response = await httpClient.post(
-      "/projects/import-git",
-      {
-        git_url: gitUrl,
-      }
-    );
-
-    return response.data;
+    return request("/projects/import-git", { method: "POST", body: { git_url: gitUrl } });
   },
 
-  getStatus: async (projectId) => {
-    const response = await httpClient.get(
-      `/projects/${projectId}/status`
-    );
-
-    return response.data;
+  getStatus: async (projectId, signal) => {
+    return request(`/projects/${projectId}/status`, { signal });
   },
 
-  getReadme: async (projectId) => {
-    const response = await httpClient.get(
-      `/projects/${projectId}/readme`
-    );
-
-    return response.data;
+  getReadme: async (projectId, signal) => {
+    return request(`/projects/${projectId}/readme`, { signal });
   },
 };
 

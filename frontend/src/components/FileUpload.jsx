@@ -17,6 +17,10 @@ function FileUpload({ file, onFileSelected, onInvalidFile, disabled, onClear }) 
       onInvalidFile("Please choose a ZIP archive.");
       return;
     }
+    if (selectedFile.size > 50 * 1024 * 1024) {
+      onInvalidFile("ZIP archives must be at most 50 MB.");
+      return;
+    }
     onFileSelected(selectedFile);
   };
 

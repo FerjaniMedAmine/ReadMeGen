@@ -1,0 +1,72 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "readmegen"
+version = "0.2.0"
+description = "Generate evidence-based project READMEs from your terminal or browser."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Amine Ferjani" }]
+keywords = ["readme", "documentation", "cli", "llm", "langgraph"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Documentation",
+]
+dependencies = [
+  "filelock>=3.16,<4",
+  "httpx>=0.28,<1",
+  "keyring>=25,<26",
+  "langchain>=1.0,<2",
+  "langchain-google-genai>=4,<5",
+  "langchain-openai>=1,<2",
+  "langchain-anthropic>=1,<2",
+  "platformdirs>=4,<5",
+  "PyJWT[crypto]>=2.10,<3",
+  "typer>=0.16,<1",
+]
+
+[project.optional-dependencies]
+web = ["fastapi>=0.115,<1", "python-multipart>=0.0.20,<1", "uvicorn>=0.34,<1"]
+dev = ["build>=1.2,<2", "pytest>=8,<10", "pytest-asyncio>=1,<2", "pytest-cov>=6,<8", "ruff>=0.12,<1", "twine>=6,<7"]
+
+[project.scripts]
+readmegen = "readmegen.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/FerjaniMedAmine/ReadMeGen"
+Repository = "https://github.com/FerjaniMedAmine/ReadMeGen"
+Issues = "https://github.com/FerjaniMedAmine/ReadMeGen/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/readmegen"]
+artifacts = ["src/readmegen/web/static/**"]
+core-metadata-version = "2.4"
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/frontend", "/scripts", "/tests", "/docs", "/README.md", "/LICENSE", "/pyproject.toml", "/uv.lock"]
+exclude = ["/frontend/node_modules", "/frontend/dist"]
+artifacts = ["src/readmegen/web/static/**"]
+core-metadata-version = "2.4"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]

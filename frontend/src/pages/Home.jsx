@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import FileUpload from "../components/FileUpload";
 import GitUrlInput from "../components/GitUrlInput";
 import projectService from "../services/projectService";
+import ConnectionPanel from "../components/ConnectionPanel";
 import "./Home.css";
 
 const STATUS_LABELS = {
@@ -17,6 +18,7 @@ const STATUS_STEPS = ["Import", "Analyze", "Write"];
 const POLL_INTERVAL_MS = 2500;
 
 function Home() {
+  const [connectionReady, setConnectionReady] = useState(false);
   const [sourceType, setSourceType] = useState("zip");
   const [file, setFile] = useState(null);
   const [gitUrl, setGitUrl] = useState("");
@@ -30,34 +32,43 @@ function Home() {
 
   const stopPolling = () => {
     if (pollingRef.current) {
-      clearInterval(pollingRef.current);
+      clearTimeout(pollingRef.current);
       pollingRef.current = null;
     }
   };
 
   useEffect(() => () => stopPolling(), []);
 
-  const startPolling = (id) => {
-    stopPolling();
-    pollingRef.current = setInterval(async () => {
+  useEffect(() => {
+    if (!projectId) return undefined;
+    let stopped = false;
+    const controller = new AbortController();
+    const poll = async () => {
       try {
-        const status = await projectService.getStatus(id);
+        const status = await projectService.getStatus(projectId, controller.signal);
+        if (stopped) return;
         setStatusInfo(status);
-
         if (status.status === "ready") {
-          stopPolling();
-          setReadme(await projectService.getReadme(id));
-        } else if (status.status === "error") {
-          stopPolling();
-          setError(status.detail || "Project processing failed.");
+          const result = await projectService.getReadme(projectId, controller.signal);
+          if (!stopped) setReadme(result);
+          return;
         }
-      } catch (pollError) {
-        console.error(pollError);
-        stopPolling();
-        setError("Connection lost while checking project status. Please try again.");
+        if (status.status === "error") {
+          setError(status.detail || "Project processing failed.");
+          return;
+        }
+        pollingRef.current = setTimeout(poll, POLL_INTERVAL_MS);
+      } catch {
+        if (!stopped) setError("Connection lost while checking progress. Restart the interface and try again.");
       }
-    }, POLL_INTERVAL_MS);
-  };
+    };
+    poll();
+    return () => {
+      stopped = true;
+      controller.abort();
+      stopPolling();
+    };
+  }, [projectId]);
 
   const changeSourceType = (type) => {
     if (loading) return;
@@ -102,6 +113,10 @@ function Home() {
     event.preventDefault();
     setError("");
 
+    if (!connectionReady) {
+      setError("Connect a provider and choose a model before generating.");
+      return;
+    }
     if (sourceType === "zip" && !file) {
       setError("Choose a ZIP archive to continue.");
       return;
@@ -117,11 +132,9 @@ function Home() {
         ? await projectService.uploadZip(file)
         : await projectService.importGit(gitUrl.trim());
       setProjectId(project.project_id);
-      startPolling(project.project_id);
+
     } catch (importError) {
-      console.error(importError);
-      const detail = importError.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "The project could not be imported. Please try again.");
+      setError(importError.message || "The project could not be imported. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -143,6 +156,8 @@ function Home() {
         </div>
         <span className="header-label">PROJECT DOCUMENTATION</span>
       </header>
+
+      <ConnectionPanel onReady={setConnectionReady} disabled={loading || isProcessing} />
 
       {!projectId && (
         <section className="workspace">
@@ -203,7 +218,7 @@ function Home() {
 
               {error && <div className="error-message" role="alert">{error}</div>}
               <button className="primary-button" type="submit"
-                disabled={loading || (sourceType === "zip" ? !file : !gitUrl.trim())}>
+                disabled={!connectionReady || loading || (sourceType === "zip" ? !file : !gitUrl.trim())}>
                 {loading ? "Importing project..." : "Generate README"}
               </button>
             </form>

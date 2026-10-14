@@ -17,6 +17,7 @@ readmegen ui
 - **No project `.env` editing:** hidden key prompts, OS credential storage, session-only GUI connections, or environment variables for automation.
 - **Protected outputs:** the CLI writes `README.generated.md` and refuses to replace existing files without `--force`.
 - **Local GUI:** Python serves the compiled React app and API together. End users do not need Node.js.
+- **Formatted README preview:** review headings, lists, code blocks, tables, links, and checklists in a responsive document view. Copy and download retain the Markdown source.
 
 Review the generated draft before committing it. Selected source files are sent to the chosen provider. Filename filtering cannot guarantee detection of every embedded secret.
 
@@ -42,7 +43,7 @@ On Windows, activate with `.venv\Scripts\Activate.ps1`. For CLI-only installatio
 Release wheels and source distributions include the GUI. Install a downloaded wheel with:
 
 ```bash
-python -m pip install './readmegen_agent-0.2.1-py3-none-any.whl[web]'
+python -m pip install './readmegen_agent-0.3.0-py3-none-any.whl[web]'
 ```
 
 Install from PyPI with `pip install 'readmegen-agent[web]'` or `pipx install 'readmegen-agent[web]'`. The terminal command and Python import package are both `readmegen`.

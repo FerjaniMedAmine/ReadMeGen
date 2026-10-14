@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { request } from "../services/api";
+import Icon from "./Icon";
 import "./ConnectionPanel.css";
 
 const preferences = (connection, model = connection.model) => ({
@@ -132,10 +133,10 @@ function ConnectionPanel({ onReady, disabled }) {
   };
 
   return (
-    <details className="surface connection-panel" open={!connection?.connected || !connection.model || undefined}>
-      <summary>AI connection <span>{connection?.connected
+    <details className="surface connection-panel" open={Boolean(error || login || (connection?.connected && !connection.model)) || undefined}>
+      <summary><span className="connection-label"><span className="connection-icon"><Icon name="sparkle" size={16} /></span><span>AI connection<small>{connection?.connected
         ? `${connection.auth_mode === "chatgpt" ? "ChatGPT" : connection.provider} · ${connection.model || "Choose a model"}`
-        : "Connect to get started"}</span></summary>
+        : "Bring your provider. Choose your model."}</small></span></span><span className="connection-summary-end"><span className={`connection-badge${connection?.connected && connection.model ? " connected" : ""}`}>{connection?.connected && connection.model ? "Connected" : "Set up"}</span><Icon className="connection-chevron" name="chevron" size={16} /></span></summary>
       <div className="connection-content">
         <form onSubmit={connect}>
           <fieldset disabled={disabled || busy || Boolean(login)}>
@@ -155,7 +156,7 @@ function ConnectionPanel({ onReady, disabled }) {
               </label>
               <label>API key
                 <input type="password" autoComplete="off" spellCheck="false" value={key}
-                  placeholder="Enter a key, or use a saved key / environment variable"
+                  placeholder="Your provider API key"
                   onChange={(event) => setKey(event.target.value)} />
               </label>
             </> : <>

@@ -3,6 +3,8 @@ import FileUpload from "../components/FileUpload";
 import GitUrlInput from "../components/GitUrlInput";
 import projectService from "../services/projectService";
 import ConnectionPanel from "../components/ConnectionPanel";
+import Icon from "../components/Icon";
+import MarkdownDocument from "../components/MarkdownDocument";
 import "./Home.css";
 
 const STATUS_LABELS = {
@@ -151,45 +153,53 @@ function Home() {
     <main className="app-shell">
       <header className="site-header">
         <div className="brand" aria-label="ReadMeGen home">
-          <span className="brand-mark" aria-hidden="true">R</span>
-          <span>ReadMeGen</span>
+          <span className="brand-mark"><Icon name="document" size={21} /></span>
+          <span>ReadMeGen<span className="brand-tag">workspace</span></span>
         </div>
-        <span className="header-label">PROJECT DOCUMENTATION</span>
+        <nav className="header-nav" aria-label="Main navigation">
+          <span className="local-badge"><span />Local workspace</span>
+          <a href="https://github.com/FerjaniMedAmine/ReadMeGen" target="_blank" rel="noopener noreferrer">GitHub <Icon name="external" size={14} /></a>
+        </nav>
       </header>
 
-      <ConnectionPanel onReady={setConnectionReady} disabled={loading || isProcessing} />
-
-      {!projectId && (
-        <section className="workspace">
+        <section className={projectId ? "connection-wrap" : "workspace"} aria-label="Project workspace">
+          {!projectId && (
           <div className="intro-panel">
-            <span className="eyebrow">README GENERATOR</span>
-            <h1>Better documentation starts with your code.</h1>
+            <span className="eyebrow"><span /> A GOOD README GOES A LONG WAY</span>
+            <h1>Your code.<br />A clearer <em>story.</em></h1>
             <p className="intro-copy">
-              Turn an existing project into a clear, structured README. Import your source,
-              let focused agents inspect it, and review a draft you can use right away.
+              Give your project the introduction it deserves. Turn your source code into thoughtful documentation, ready for your next reader.
             </p>
             <div className="workflow-list" aria-label="How it works">
-              <div className="workflow-item"><span>01</span><p><strong>Import</strong> a ZIP archive or Git repository.</p></div>
-              <div className="workflow-item"><span>02</span><p><strong>Analyze</strong> the project&apos;s key files.</p></div>
-              <div className="workflow-item"><span>03</span><p><strong>Review</strong> and download your README.</p></div>
+              <div className="workflow-item"><span><Icon name="upload" /></span><p><strong>Bring your code</strong>Upload an archive or paste a repository.</p></div>
+              <div className="workflow-item"><span><Icon name="sparkle" /></span><p><strong>Let the details connect</strong>Focused agents read your project files.</p></div>
+              <div className="workflow-item"><span><Icon name="document" /></span><p><strong>Make it yours</strong>Review a formatted draft, then export.</p></div>
+            </div>
+            <div className="document-sample" aria-hidden="true">
+              <div className="sample-toolbar"><span className="sample-dots"><i /><i /><i /></span><span>README.md</span><span className="sample-ready"><Icon name="check" size={12} /> Well documented</span></div>
+              <div className="sample-body"><Icon name="document" size={26} /><div><strong>From source to first impression.</strong><p>Overview. Installation. Usage. All in one place.</p></div></div>
             </div>
           </div>
+          )}
 
+          <div className="builder-column">
+          <ConnectionPanel onReady={setConnectionReady} disabled={loading || isProcessing} />
+          {!projectId && (
           <section className="surface import-surface" aria-labelledby="import-title">
             <div className="surface-heading">
-              <span className="section-kicker">NEW PROJECT</span>
-              <h2 id="import-title">Import your project</h2>
-              <p>Choose how you want to provide the source code.</p>
+              <span className="section-kicker">THE START OF SOMETHING CLEAR</span>
+              <h2 id="import-title">Meet your next README.</h2>
+              <p>Start with the code. We&apos;ll help with the words.</p>
             </div>
 
             <div className="source-tabs" aria-label="Project source">
               <button type="button" className={sourceType === "zip" ? "source-tab active" : "source-tab"}
                 aria-pressed={sourceType === "zip"} onClick={() => changeSourceType("zip")}>
-                ZIP archive
+                <Icon name="upload" size={16} /> ZIP archive
               </button>
               <button type="button" className={sourceType === "git" ? "source-tab active" : "source-tab"}
                 aria-pressed={sourceType === "git"} onClick={() => changeSourceType("git")}>
-                Git repository
+                <Icon name="git" size={16} /> Git repository
               </button>
             </div>
 
@@ -202,7 +212,7 @@ function Home() {
                   </div>
                   <FileUpload file={file} onFileSelected={(selected) => { setFile(selected); setError(""); }}
                     onInvalidFile={setError} disabled={loading} onClear={() => { setFile(null); setError(""); }} />
-                  <p className="field-note">The archive must include the files inside your project folder. Archives containing only an empty folder cannot be analyzed.</p>
+                  <p className="field-note">Include your source files. Dependencies and build folders can stay behind.</p>
                 </div>
               ) : (
                 <div className="source-content">
@@ -219,17 +229,19 @@ function Home() {
               {error && <div className="error-message" role="alert">{error}</div>}
               <button className="primary-button" type="submit"
                 disabled={!connectionReady || loading || (sourceType === "zip" ? !file : !gitUrl.trim())}>
-                {loading ? "Importing project..." : "Generate README"}
+                <Icon name="sparkle" size={17} />{loading ? "Importing project…" : "Generate README"}<Icon name="arrow" size={17} />
               </button>
             </form>
-            <p className="privacy-note">Selected source files are sent to the configured AI model for analysis.</p>
+            <p className="privacy-note"><Icon name="lock" size={13} /> Selected files are sent to your chosen AI provider.</p>
           </section>
+          )}
+          </div>
         </section>
-      )}
 
       {isProcessing && (
         <section className="surface progress-surface" aria-live="polite">
-          <span className="section-kicker">IN PROGRESS</span>
+          <span className="progress-orbit"><Icon name="sparkle" size={26} /></span>
+          <span className="section-kicker">GOOD DOCUMENTATION TAKES A LITTLE READING</span>
           <h1>Creating your README</h1>
           <p className="progress-description">{STATUS_LABELS[statusInfo?.status] || "Starting project analysis"}</p>
           <ol className="progress-list">
@@ -248,7 +260,7 @@ function Home() {
         </section>
       )}
 
-      {projectId && error && (
+      {projectId && error && !readme && (
         <section className="surface state-surface">
           <span className="section-kicker">PROCESSING STOPPED</span>
           <h1>We could not finish this README</h1>
@@ -261,23 +273,25 @@ function Home() {
         <section className="result-layout">
           <div className="result-heading">
             <div>
-              <span className="section-kicker">READY TO REVIEW</span>
+              <span className="section-kicker result-kicker"><Icon name="check" size={15} /> READY FOR YOUR NEXT READER</span>
               <h1>Your README is ready</h1>
-              <p>Review the draft, then copy or download the Markdown file.</p>
+              <p>Here&apos;s your first draft. Give it a read and make it your own.</p>
             </div>
             <div className="result-actions">
-              <button className="secondary-button" type="button" onClick={handleStartOver}>New project</button>
-              <button className="secondary-button" type="button" onClick={handleCopyReadme}>{copied ? "Copied" : "Copy text"}</button>
-              <button className="primary-button" type="button" onClick={handleDownloadReadme}>Download README.md</button>
+              <button className="text-button" type="button" onClick={handleStartOver}><Icon name="plus" size={16} /> New project</button>
+              <button className="secondary-button" type="button" onClick={handleCopyReadme}><Icon name={copied ? "check" : "copy"} size={16} />{copied ? "Copied!" : "Copy Markdown"}</button>
+              <button className="primary-button" type="button" onClick={handleDownloadReadme}><Icon name="download" size={16} /> Download .md</button>
             </div>
           </div>
           {error && <p className="error-message" role="alert">{error}</p>}
           <div className="surface preview-surface">
-            <div className="preview-heading"><span>README.md</span><span>MARKDOWN PREVIEW</span></div>
-            <pre className="readme-preview">{readme}</pre>
+            <div className="preview-heading"><span><Icon name="document" size={16} /> README.md</span><span className="preview-badge">Formatted preview</span></div>
+            <article className="readme-preview" aria-label="Formatted README"><MarkdownDocument content={readme} /></article>
           </div>
+          <p className="preview-note">A polished preview, a portable file. Copy and download preserve the original Markdown.</p>
         </section>
       )}
+      <footer className="site-footer"><span>Made from your code. Written for people.</span><span>ReadMeGen <span aria-hidden="true">/</span> Documentation, thoughtfully.</span></footer>
     </main>
   );
 }

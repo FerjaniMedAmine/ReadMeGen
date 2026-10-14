@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import Icon from "./Icon";
 import "./FileUpload.css";
 
 function formatSize(bytes) {
@@ -51,9 +52,9 @@ function FileUpload({ file, onFileSelected, onInvalidFile, disabled, onClear }) 
       }}>
       <input id="project-zip" type="file" accept=".zip,application/zip"
         onChange={(event) => selectFile(event.target.files[0])} disabled={disabled} />
-      <span className="upload-symbol" aria-hidden="true">ZIP</span>
-      <strong>Choose a ZIP file or drag it here</strong>
-      <span>Include the project files and folders in the archive.</span>
+      <span className="upload-symbol"><Icon name="upload" size={21} /></span>
+      <strong>Drop your project here</strong>
+      <span>or <span className="browse-link">browse files</span> to choose a ZIP archive</span>
     </label>
   );
 }

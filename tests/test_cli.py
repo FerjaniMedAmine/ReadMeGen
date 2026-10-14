@@ -10,7 +10,7 @@ runner = CliRunner()
 
 
 def test_cli_help_version_and_noninteractive_default():
-    assert runner.invoke(app, ["--version"]).output.strip() == "0.2.1"
+    assert runner.invoke(app, ["--version"]).output.strip() == "0.3.0"
     assert "ui" in runner.invoke(app, ["--help"]).output
     assert "Usage" in runner.invoke(app, []).output
 

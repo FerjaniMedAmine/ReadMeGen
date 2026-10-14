@@ -7,7 +7,13 @@ from unittest.mock import AsyncMock
 import pytest
 
 from readmegen.errors import ImportError
-from readmegen.sources import clone_git, extract_zip, filter_project_files, validate_git_url
+from readmegen.sources import (
+    clone_git,
+    extract_zip,
+    filter_project_files,
+    prepare_source,
+    validate_git_url,
+)
 
 
 def archive(path: Path, members: dict[str, str]) -> Path:
@@ -15,6 +21,21 @@ def archive(path: Path, members: dict[str, str]) -> Path:
         for name, text in members.items():
             stream.writestr(name, text)
     return path
+
+
+async def test_prepare_source_accepts_native_directory_with_spaces(tmp_path):
+    project = tmp_path / "My Projects" / "sales-analyzer"
+    project.mkdir(parents=True)
+    (project / "app.py").write_text("print('hello')")
+    source = await prepare_source(str(project), tmp_path / "work")
+    assert source == project.resolve()
+    assert [item.relative_path for item in filter_project_files(source)] == ["app.py"]
+
+
+async def test_prepare_source_accepts_native_zip_path_with_spaces(tmp_path):
+    project = archive(tmp_path / "My Project.zip", {"app.py": "print('hello')"})
+    source = await prepare_source(str(project), tmp_path / "work")
+    assert (source / "app.py").read_text() == "print('hello')"
 
 
 def test_filter_prunes_dependencies_credentials_binary_and_symlinks(tmp_path):

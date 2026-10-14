@@ -248,7 +248,7 @@ def shell() -> None:
         while True:
             try:
                 command = input("readmegen> ").strip()
-                parts = shlex.split(command)
+                parts = split_shell_command(command)
                 if not parts:
                     continue
                 name, *arguments = parts
@@ -284,3 +284,17 @@ def shell() -> None:
         if handle:
             handle.stop()
         chatgpt.close()
+
+
+def split_shell_command(command: str, *, windows: bool | None = None) -> list[str]:
+    """Group quoted arguments while preserving native Windows path separators."""
+    lexer = shlex.shlex(command, posix=True)
+    lexer.whitespace_split = True
+    lexer.commenters = ""
+    if windows is None:
+        windows = sys.platform == "win32"
+    if windows:
+        # Backslashes in drive paths and UNC shares are literal on Windows.
+        # Disable escaping so a trailing separator cannot consume a closing quote.
+        lexer.escape = ""
+    return list(lexer)

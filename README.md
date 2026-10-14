@@ -42,7 +42,7 @@ On Windows, activate with `.venv\Scripts\Activate.ps1`. For CLI-only installatio
 Release wheels and source distributions include the GUI. Install a downloaded wheel with:
 
 ```bash
-python -m pip install './readmegen_agent-0.2.0-py3-none-any.whl[web]'
+python -m pip install './readmegen_agent-0.2.1-py3-none-any.whl[web]'
 ```
 
 Install from PyPI with `pip install 'readmegen-agent[web]'` or `pipx install 'readmegen-agent[web]'`. The terminal command and Python import package are both `readmegen`.
@@ -91,6 +91,20 @@ readmegen shell
 ```
 
 In the interactive shell, `/ui` launches the GUI and prints its address. `/ui --no-browser` prints it without opening a browser; repeating `/ui` reuses the shell's server. Other commands: `/setup`, `/models`, `/generate`, `/logout`, `/help`, `/exit`.
+
+On Windows, use a full project path and quote paths containing spaces. For example, in PowerShell or Command Prompt:
+
+```powershell
+readmegen generate "C:\Users\Alice\Desktop\My Project"
+```
+
+At the `readmegen>` prompt, use `/generate` instead:
+
+```text
+/generate "C:\Users\Alice\Desktop\My Project"
+```
+
+Version 0.2.1 fixes the interactive shell removing backslashes from unquoted Windows paths. Windows shell arguments preserve backslashes, including UNC paths and quoted trailing separators.
 
 The GUI binds only to `127.0.0.1`. The default port is 8765; if occupied, the launcher selects a free port. An explicitly requested occupied port fails clearly; `--port 0` chooses a free port. Keep the terminal running. Ctrl+C or shell exit stops the server.
 
@@ -150,6 +164,6 @@ python scripts/check_distribution.py dist
 
 For frontend development, run `readmegen ui --no-browser --port 8765` and `npm run dev --prefix frontend`. Vite proxies `/api` to Python. Rebuild bundled assets after changes; end-user installations never start Vite.
 
-CI tests Python 3.12–3.14, lints both interfaces, audits npm dependencies, verifies distributions, and installs a wheel outside the checkout. Tests use simulated models and credentials and need no paid inference.
+CI tests Python 3.12–3.14 on Linux and CLI/path handling on Windows, lints both interfaces, audits npm dependencies, verifies distributions, and installs a wheel outside the checkout. Tests use simulated models and credentials and need no paid inference.
 
 Read [architecture and tradeoffs](docs/architecture.md) and [release instructions](docs/releasing.md). Licensed under [MIT](LICENSE).

@@ -42,10 +42,10 @@ On Windows, activate with `.venv\Scripts\Activate.ps1`. For CLI-only installatio
 Release wheels and source distributions include the GUI. Install a downloaded wheel with:
 
 ```bash
-python -m pip install './readmegen-0.2.0-py3-none-any.whl[web]'
+python -m pip install './readmegen_agent-0.2.0-py3-none-any.whl[web]'
 ```
 
-Once the maintainer publishes under an available PyPI name, the intended commands are `pip install 'readmegen[web]'` or `pipx install 'readmegen[web]'`. This checkout does not mean the package is already published or its PyPI name reserved.
+Install from PyPI with `pip install 'readmegen-agent[web]'` or `pipx install 'readmegen-agent[web]'`. The terminal command and Python import package are both `readmegen`.
 
 ## Choose authentication and model
 

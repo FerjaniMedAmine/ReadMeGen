@@ -1516,7 +1516,7 @@ wheels = [
 ]
 
 [[package]]
-name = "readmegen"
+name = "readmegen-agent"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [

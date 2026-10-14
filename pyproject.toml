@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27,<2"]
 build-backend = "hatchling.build"
 
 [project]
-name = "readmegen"
+name = "readmegen-agent"
 version = "0.2.0"
 description = "Generate evidence-based project READMEs from your terminal or browser."
 readme = "README.md"

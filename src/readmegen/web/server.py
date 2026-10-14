@@ -39,7 +39,7 @@ def launch_ui(
         from readmegen.web.app import STATIC_DIR, create_app
     except ModuleNotFoundError as error:
         raise ConfigurationError(
-            "Install GUI dependencies with: pip install 'readmegen[web]'"
+            "Install GUI dependencies with: pip install 'readmegen-agent[web]'"
         ) from error
     if not (STATIC_DIR / "index.html").is_file():
         raise ConfigurationError(

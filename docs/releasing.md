@@ -4,7 +4,7 @@ GitHub and Python distributions share one version. Wheels and source distributio
 
 ## Maintainer setup
 
-1. Confirm an available PyPI name. `readmegen` is intended, not a confirmed reservation. If unavailable, change distribution metadata and installation examples; the CLI/import package can retain their names.
+1. Use `readmegen-agent` as the PyPI distribution name. The CLI and import package remain `readmegen`; PyPI rejected `readmegen` because it is too similar to an existing project.
 2. Configure a PyPI Trusted Publisher for `FerjaniMedAmine/ReadMeGen`, workflow `publish.yml`, environment `pypi`.
    Configure a separate pending publisher on TestPyPI using the same repository and workflow, with environment `testpypi`.
 3. Require a reviewer on GitHub's `pypi` environment so publishing has a final human approval step.
@@ -37,12 +37,12 @@ Create `v<project-version>` only after verification. Publication validates the t
 3. In a fresh environment, install the locally built wheel with its `web` extra to obtain dependencies from PyPI, then reinstall the trial package without resolving dependencies:
 
    ```bash
-   python -m pip install './dist/readmegen-0.2.0-py3-none-any.whl[web]'
-   python -m pip install --force-reinstall --no-deps --index-url https://test.pypi.org/simple/ readmegen==0.2.0
+   python -m pip install './dist/readmegen_agent-0.2.0-py3-none-any.whl[web]'
+   python -m pip install --force-reinstall --no-deps --index-url https://test.pypi.org/simple/ readmegen-agent==0.2.0
    readmegen --version
    readmegen ui --no-browser
    ```
 
 4. Record live provider validation and any remaining limitations in release notes.
 5. Publish the GitHub release `v0.2.0`; select **pre-release** for the initial beta. The workflow uploads to PyPI after the `pypi` environment approval and attaches the wheel and source archive to the GitHub release.
-6. Check both publishing jobs and verify `python -m pip install 'readmegen[web]'` from PyPI in a fresh environment before announcing availability.
+6. Check both publishing jobs and verify `python -m pip install 'readmegen-agent[web]'` from PyPI in a fresh environment before announcing availability. If a version was already uploaded manually, publish a new version through the workflow; PyPI does not allow reusing uploaded files.

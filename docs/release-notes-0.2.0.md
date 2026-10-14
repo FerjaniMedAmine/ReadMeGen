@@ -12,14 +12,14 @@ Generate source-based README drafts from a local directory, ZIP archive, or publ
 
 The release candidate passed 60 Python tests on Python 3.12/Linux, with 76% coverage. Python and frontend lint checks, frontend tests, GUI build, wheel and source distribution checks, and installation into a fresh environment passed. The installed GUI served its HTML, assets, and health API and shut down cleanly. Dependency audits of the development environment and frontend reported no known vulnerabilities on 2026-10-13.
 
-GitHub CI results for Python 3.12–3.14 and TestPyPI installation must be confirmed before publication. Real provider generation, credential persistence/restart, and live ChatGPT sign-in have not been validated in this release session. ChatGPT support remains experimental. Windows and macOS were not tested in this session.
+GitHub CI passed on Python 3.12–3.14 for commit `6f20402`. The PyPI distribution name is `readmegen-agent`; the CLI and import package remain `readmegen`. TestPyPI installation was not performed. Real provider generation, credential persistence/restart, and live ChatGPT sign-in have not been validated in this release session. ChatGPT support remains experimental. Windows and macOS were not tested in this session.
 
 ## Installation
 
 After successful PyPI publication:
 
 ```bash
-python -m pip install 'readmegen[web]'
+python -m pip install 'readmegen-agent[web]'
 readmegen setup
 readmegen generate ./my-project
 readmegen ui
